@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2024 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 package org.fcitx.fcitx5.android.input.keyboard
 
@@ -24,6 +25,9 @@ import org.fcitx.fcitx5.android.input.keyboard.CommonKeyActionListener.Backspace
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.CommitAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.DeleteSelectionAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.FcitxKeyAction
+import org.fcitx.fcitx5.android.input.keyboard.KeyAction.IflytekVoicePressToTalkCancelAction
+import org.fcitx.fcitx5.android.input.keyboard.KeyAction.IflytekVoicePressToTalkStartAction
+import org.fcitx.fcitx5.android.input.keyboard.KeyAction.IflytekVoicePressToTalkStopAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.LangSwitchAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.MoveSelectionAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.PickerSwitchAction
@@ -180,10 +184,16 @@ class CommonKeyActionListener :
                             toggleIme()
                         }
                         SpaceLongPressBehavior.ShowPicker -> showInputMethodPicker()
+                        SpaceLongPressBehavior.IflytekPressToTalk -> {}
                     }
                 }
+                is IflytekVoicePressToTalkStartAction -> service.startIflytekVoiceInput()
+                is IflytekVoicePressToTalkStopAction -> service.stopIflytekVoiceInput()
+                is IflytekVoicePressToTalkCancelAction -> service.cancelIflytekVoiceInput()
                 else -> {}
             }
         }
     }
 }
+
+

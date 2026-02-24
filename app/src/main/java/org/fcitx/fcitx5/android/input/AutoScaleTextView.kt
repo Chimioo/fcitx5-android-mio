@@ -54,6 +54,14 @@ class AutoScaleTextView @JvmOverloads constructor(
     private var textScaleX = 1.0f
     private var textScaleY = 1.0f
 
+    override fun setTextSize(unit: Int, size: Float) {
+        needsMeasureText = true
+        needsCalculateTransform = true
+        super.setTextSize(unit, size)
+        requestLayout()
+        invalidate()
+    }
+
     override fun setText(charSequence: CharSequence?, bufferType: BufferType) {
         // setText can be called in super constructor
         if (!::text.isInitialized || charSequence == null || !text.contentEquals(charSequence)) {
@@ -182,3 +190,5 @@ class AutoScaleTextView @JvmOverloads constructor(
         return (-fontMetrics.top * textScaleY).roundToInt()
     }
 }
+
+

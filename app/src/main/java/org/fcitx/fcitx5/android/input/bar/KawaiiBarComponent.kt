@@ -24,6 +24,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.core.CapabilityFlag
@@ -99,6 +100,7 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
     private val expandToolbarByDefault by prefs.keyboard.expandToolbarByDefault
     private val toolbarNumRowOnPassword by prefs.keyboard.toolbarNumRowOnPassword
     private val showVoiceInputButton by prefs.keyboard.showVoiceInputButton
+    private val enableIflytekVoiceInput by prefs.voice.enableIflytekVoiceInput
 
     private var clipboardTimeoutJob: Job? = null
 
@@ -198,6 +200,10 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
     private val switchToVoiceInputCallback = View.OnClickListener {
         val (id, subtype) = voiceInputSubtype ?: return@OnClickListener
         InputMethodUtil.switchInputMethod(service, id, subtype)
+    }
+
+    private val toggleIflytekVoiceInputCallback = View.OnClickListener {
+        service.toggleIflytekVoiceInput()
     }
 
     private val idleUi: IdleUi by lazy {
@@ -361,6 +367,16 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
         ClipboardManager.addOnUpdateListener(onClipboardUpdateListener)
         clipboardSuggestion.registerOnChangeListener(onClipboardSuggestionUpdateListener)
         clipboardItemTimeout.registerOnChangeListener(onClipboardTimeoutUpdateListener)
+
+        service.lifecycleScope.launch {
+            service.iflytekVoiceRunning.collectLatest {
+                if (enableIflytekVoiceInput && showVoiceInputButton) {
+                    idleUi.setIflytekVoiceInputActive(it)
+                } else {
+                    idleUi.setIflytekVoiceInputActive(false)
+                }
+            }
+        }
     }
 
     override fun onStartInput(info: EditorInfo, capFlags: CapabilityFlags) {
@@ -373,12 +389,20 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
             idleUi.inlineSuggestionsBar.clear()
         }
         voiceInputSubtype = InputMethodUtil.firstVoiceInput()
-        val shouldShowVoiceInput =
+        val shouldShowVoiceInput = if (enableIflytekVoiceInput) {
+            showVoiceInputButton && !capFlags.has(CapabilityFlag.Password)
+        } else {
             showVoiceInputButton && voiceInputSubtype != null && !capFlags.has(CapabilityFlag.Password)
+        }
         idleUi.setHideKeyboardIsVoiceInput(
             shouldShowVoiceInput,
-            if (shouldShowVoiceInput) switchToVoiceInputCallback else hideKeyboardCallback
+            if (shouldShowVoiceInput) {
+                if (enableIflytekVoiceInput) toggleIflytekVoiceInputCallback else switchToVoiceInputCallback
+            } else hideKeyboardCallback
         )
+        if (!shouldShowVoiceInput) {
+            idleUi.setIflytekVoiceInputActive(false)
+        }
         evalIdleUiState()
     }
 
@@ -477,3 +501,5 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
     }
 
 }
+
+

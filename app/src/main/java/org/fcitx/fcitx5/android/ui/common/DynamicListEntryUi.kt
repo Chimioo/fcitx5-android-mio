@@ -5,24 +5,31 @@
 package org.fcitx.fcitx5.android.ui.common
 
 import android.content.Context
+import android.widget.ImageView
 import android.view.View
 import android.view.ViewGroup
+import com.google.android.material.behavior.HideViewOnScrollBehavior
+import com.google.android.material.checkbox.MaterialCheckBox
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.fcitx.fcitx5.android.R
 import splitties.dimensions.dp
 import splitties.resources.drawable
 import splitties.resources.resolveThemeAttribute
-import splitties.resources.styledColor
+import splitties.resources.resolveThemeAttribute
 import splitties.resources.styledDimenPxSize
 import splitties.resources.styledDrawable
 import splitties.views.backgroundColor
 import splitties.views.dsl.constraintlayout.after
 import splitties.views.dsl.constraintlayout.before
+import splitties.views.dsl.constraintlayout.bottomOfParent
 import splitties.views.dsl.constraintlayout.centerVertically
 import splitties.views.dsl.constraintlayout.constraintLayout
 import splitties.views.dsl.constraintlayout.endOfParent
 import splitties.views.dsl.constraintlayout.lParams
 import splitties.views.dsl.constraintlayout.matchConstraints
 import splitties.views.dsl.constraintlayout.startOfParent
+import splitties.views.dsl.constraintlayout.topOfParent
 import splitties.views.dsl.core.Ui
 import splitties.views.dsl.core.add
 import splitties.views.dsl.core.checkBox
@@ -30,6 +37,7 @@ import splitties.views.dsl.core.imageButton
 import splitties.views.dsl.core.imageView
 import splitties.views.dsl.core.matchParent
 import splitties.views.dsl.core.textView
+import splitties.views.dsl.core.view
 import splitties.views.dsl.core.wrapContent
 import splitties.views.imageDrawable
 import splitties.views.setPaddingDp
@@ -39,14 +47,14 @@ class DynamicListEntryUi(override val ctx: Context) : Ui {
 
     val handleImage = imageView {
         imageDrawable = drawable(R.drawable.ic_baseline_drag_handle_24)!!.apply {
-            setTint(styledColor(android.R.attr.colorAccent))
+            setTint(MaterialColors.getColor(ctx, com.google.android.material.R.attr.colorOnSurfaceVariant, 0))
         }
         setPaddingDp(3, 0, 3, 0)
     }
 
-    val multiselectCheckBox = checkBox()
+    val multiselectCheckBox = view(::MaterialCheckBox)
 
-    val checkBox = checkBox()
+    val checkBox = view(::MaterialCheckBox)
 
     val nameText = textView {
         setPaddingDp(0, 16, 0, 16)
@@ -55,21 +63,22 @@ class DynamicListEntryUi(override val ctx: Context) : Ui {
 
     val editButton = imageButton {
         background = styledDrawable(android.R.attr.selectableItemBackground)
+        scaleType = ImageView.ScaleType.CENTER_INSIDE
         imageDrawable = drawable(R.drawable.ic_baseline_edit_24)!!.apply {
-            setTint(styledColor(android.R.attr.colorControlNormal))
+            setTint(MaterialColors.getColor(ctx, com.google.android.material.R.attr.colorOnSurfaceVariant, 0))
         }
     }
 
     val settingsButton = imageButton {
         background = styledDrawable(android.R.attr.selectableItemBackground)
+        scaleType = ImageView.ScaleType.CENTER_INSIDE
         imageDrawable = drawable(R.drawable.ic_baseline_settings_24)!!.apply {
-            setTint(styledColor(android.R.attr.colorControlNormal))
+            setTint(MaterialColors.getColor(ctx, com.google.android.material.R.attr.colorOnSurfaceVariant, 0))
         }
     }
 
     override val root: View = constraintLayout {
         layoutParams = ViewGroup.LayoutParams(matchParent, wrapContent)
-        backgroundColor = styledColor(android.R.attr.colorBackground)
         minHeight = styledDimenPxSize(android.R.attr.listPreferredItemHeightSmall)
 
         val paddingStart = styledDimenPxSize(android.R.attr.listPreferredItemPaddingStart)
@@ -100,21 +109,24 @@ class DynamicListEntryUi(override val ctx: Context) : Ui {
             height = wrapContent
             centerVertically()
             after(checkBox, paddingStart)
-            before(editButton)
+            before(editButton, dp(12))
         })
 
         add(editButton, lParams {
-            width = dp(53)
+            width = dp(60)
             height = matchConstraints
-            centerVertically()
+            topOfParent()
+            bottomOfParent()
             before(settingsButton)
         })
 
         add(settingsButton, lParams {
-            width = dp(53)
+            width = dp(60)
             height = matchConstraints
-            centerVertically()
+            topOfParent()
+            bottomOfParent()
             endOfParent()
         })
     }
 }
+

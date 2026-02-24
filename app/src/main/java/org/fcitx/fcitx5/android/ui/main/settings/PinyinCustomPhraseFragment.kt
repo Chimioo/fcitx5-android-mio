@@ -4,7 +4,6 @@
  */
 package org.fcitx.fcitx5.android.ui.main.settings
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
@@ -12,9 +11,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
@@ -83,7 +84,7 @@ class PinyinCustomPhraseFragment : Fragment(), OnItemChangedListener<PinyinCusto
                 return if (endIndex == s.length) {
                     s
                 } else {
-                    s.take(endIndex) + "â€¦"
+                    s.take(endIndex) + "â€?
                 }
             }
 
@@ -133,7 +134,7 @@ class PinyinCustomPhraseFragment : Fragment(), OnItemChangedListener<PinyinCusto
                     add(orderLayout, lParams(matchParent))
                     add(phraseLayout, lParams(matchParent))
                 }
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(title)
                     .setView(layout)
                     .setPositiveButton(android.R.string.ok, null)
@@ -239,3 +240,5 @@ class PinyinCustomPhraseFragment : Fragment(), OnItemChangedListener<PinyinCusto
     }
 
 }
+
+

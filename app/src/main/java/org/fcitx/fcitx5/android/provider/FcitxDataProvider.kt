@@ -92,7 +92,7 @@ class FcitxDataProvider : DocumentsProvider() {
                     Root.COLUMN_FLAGS,
                     Root.FLAG_SUPPORTS_CREATE or Root.FLAG_LOCAL_ONLY or Root.FLAG_SUPPORTS_SEARCH or Root.FLAG_SUPPORTS_IS_CHILD
                 )
-                add(Root.COLUMN_ICON, R.mipmap.app_icon)
+                add(Root.COLUMN_ICON, R.mipmap.ic_launcher)
                 add(Root.COLUMN_TITLE, context!!.getString(R.string.app_name))
                 add(Root.COLUMN_DOCUMENT_ID, baseDir.docId)
                 add(Root.COLUMN_MIME_TYPES, MIME_TYPE_WILDCARD)
@@ -294,3 +294,5 @@ class FcitxDataProvider : DocumentsProvider() {
         }
     }
 }
+
+

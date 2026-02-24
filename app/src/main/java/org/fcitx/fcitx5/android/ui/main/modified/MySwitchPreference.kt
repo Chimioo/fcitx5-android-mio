@@ -5,7 +5,7 @@
 package org.fcitx.fcitx5.android.ui.main.modified
 
 import android.content.Context
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.preference.PreferenceViewHolder
 import androidx.preference.SwitchPreference
 import org.fcitx.fcitx5.android.R
@@ -14,7 +14,7 @@ class MySwitchPreference(context: Context) : SwitchPreference(context) {
     override fun onBindViewHolder(holder: PreferenceViewHolder) {
         super.onBindViewHolder(holder)
         holder.itemView.setOnLongClickListener {
-            AlertDialog.Builder(context)
+            MaterialAlertDialogBuilder(context)
                 .setTitle(title ?: "Preference")
                 .setMessage(R.string.whether_reset_switch_preference)
                 .setNegativeButton(android.R.string.cancel) { _, _ -> }
@@ -24,3 +24,4 @@ class MySwitchPreference(context: Context) : SwitchPreference(context) {
         }
     }
 }
+

@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2023 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.ui.main.settings.theme
 
 import android.os.Build
@@ -21,8 +22,6 @@ import kotlinx.coroutines.launch
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.data.theme.ThemeManager
 import splitties.dimensions.dp
-import splitties.resources.styledColor
-import splitties.views.backgroundColor
 import splitties.views.dsl.constraintlayout.below
 import splitties.views.dsl.constraintlayout.bottomOfParent
 import splitties.views.dsl.constraintlayout.centerHorizontally
@@ -95,7 +94,6 @@ class ThemeFragment : Fragment() {
                 centerHorizontally()
                 bottomOfParent()
             })
-            backgroundColor = styledColor(android.R.attr.colorPrimary)
             elevation = dp(4f)
         }
 
@@ -126,3 +124,5 @@ class ThemeFragment : Fragment() {
         super.onDestroy()
     }
 }
+
+

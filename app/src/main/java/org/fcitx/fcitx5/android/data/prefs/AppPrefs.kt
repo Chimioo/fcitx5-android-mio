@@ -16,6 +16,7 @@ import org.fcitx.fcitx5.android.input.candidates.expanded.ExpandedCandidateStyle
 import org.fcitx.fcitx5.android.input.candidates.floating.FloatingCandidatesMode
 import org.fcitx.fcitx5.android.input.candidates.floating.FloatingCandidatesOrientation
 import org.fcitx.fcitx5.android.input.candidates.horizontal.HorizontalCandidateMode
+import org.fcitx.fcitx5.android.input.keyboard.FloatingKeyboardShowMode
 import org.fcitx.fcitx5.android.input.keyboard.LangSwitchBehavior
 import org.fcitx.fcitx5.android.input.keyboard.SpaceLongPressBehavior
 import org.fcitx.fcitx5.android.input.keyboard.SwipeSymbolDirection
@@ -31,6 +32,27 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val firstRun = bool("first_run", true)
         val lastSymbolLayout = string("last_symbol_layout", PickerWindow.Key.Symbol.name)
         val lastPickerType = string("last_picker_type", PickerWindow.Key.Emoji.name)
+
+        // Legacy floating keyboard prefs (single set). Kept for migration.
+        val floatingKeyboardX = int("floating_keyboard_x", 0)
+        val floatingKeyboardY = int("floating_keyboard_y", 0)
+        val floatingKeyboardScale = float("floating_keyboard_scale", 1.0f)
+        val floatingKeyboardScaleX = float("floating_keyboard_scale_x", 1.0f)
+        val floatingKeyboardScaleY = float("floating_keyboard_scale_y", 1.0f)
+
+        // Floating keyboard prefs stored separately for portrait/landscape.
+        val floatingKeyboardXPortrait = int("floating_keyboard_x_portrait", 0)
+        val floatingKeyboardYPortrait = int("floating_keyboard_y_portrait", 0)
+        val floatingKeyboardScalePortrait = float("floating_keyboard_scale_portrait", 1.0f)
+        val floatingKeyboardScaleXPortrait = float("floating_keyboard_scale_x_portrait", 1.0f)
+        val floatingKeyboardScaleYPortrait = float("floating_keyboard_scale_y_portrait", 1.0f)
+
+        val floatingKeyboardXLandscape = int("floating_keyboard_x_landscape", 0)
+        val floatingKeyboardYLandscape = int("floating_keyboard_y_landscape", 0)
+        val floatingKeyboardScaleLandscape = float("floating_keyboard_scale_landscape", 1.0f)
+        val floatingKeyboardScaleXLandscape = float("floating_keyboard_scale_x_landscape", 1.0f)
+        val floatingKeyboardScaleYLandscape = float("floating_keyboard_scale_y_landscape", 1.0f)
+
         val verboseLog = bool("verbose_log", false)
         val pid = int("pid", 0)
         val editorInfoInspector = bool("editor_info_inspector", false)
@@ -59,12 +81,18 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
                 "haptic_on_keypress",
                 InputFeedbackMode.FollowingSystem
             )
+
         val hapticOnKeyUp = switch(
             R.string.button_up_haptic_feedback,
             "haptic_on_keyup",
             false
         ) { hapticOnKeyPress.getValue() != InputFeedbackMode.Disabled }
-        val hapticOnRepeat = switch(R.string.haptic_on_repeat, "haptic_on_repeat", false)
+
+        val hapticOnRepeat = switch(
+            R.string.haptic_on_repeat,
+            "haptic_on_repeat",
+            false
+        ) { hapticOnKeyPress.getValue() != InputFeedbackMode.Disabled }
 
         val buttonPressVibrationMilliseconds: ManagedPreference.PInt
         val buttonLongPressVibrationMilliseconds: ManagedPreference.PInt
@@ -141,6 +169,18 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             "keep_keyboard_letters_uppercase",
             false
         )
+        val floatingKeyboard = switch(
+            R.string.floating_keyboard,
+            "floating_keyboard",
+            false
+        )
+
+        val floatingKeyboardShowMode = enumList(
+            R.string.floating_keyboard_show_mode,
+            "floating_keyboard_show_mode",
+            FloatingKeyboardShowMode.Always
+        ) { floatingKeyboard.getValue() }
+
         val showVoiceInputButton =
             switch(R.string.show_voice_input_button, "show_voice_input_button", false)
         val expandKeypressArea =
@@ -346,6 +386,47 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         ) { clipboardListening.getValue() }
     }
 
+    inner class Voice : ManagedPreferenceCategory(R.string.iflytek_voice_input, sharedPreferences) {
+        val enableIflytekVoiceInput = switch(
+            R.string.enable_iflytek_voice_input,
+            "enable_iflytek_voice_input",
+            false
+        )
+
+        val iflytekAppId = string(
+            R.string.iflytek_app_id,
+            "iflytek_app_id",
+            ""
+        ) { enableIflytekVoiceInput.getValue() }
+        val iflytekApiKey = string(
+            R.string.iflytek_api_key,
+            "iflytek_api_key",
+            ""
+        ) { enableIflytekVoiceInput.getValue() }
+        val iflytekApiSecret = string(
+            R.string.iflytek_api_secret,
+            "iflytek_api_secret",
+            ""
+        ) { enableIflytekVoiceInput.getValue() }
+
+        val iflytekLang = string(
+            R.string.iflytek_lang,
+            "iflytek_lang",
+            "autodialect"
+        ) { enableIflytekVoiceInput.getValue() }
+
+        val iflytekUuid = string(
+            R.string.iflytek_uuid,
+            "iflytek_uuid",
+            ""
+        ) { enableIflytekVoiceInput.getValue() }
+        val iflytekPd = string(
+            R.string.iflytek_pd,
+            "iflytek_pd",
+            ""
+        ) { enableIflytekVoiceInput.getValue() }
+    }
+
     inner class Symbols : ManagedPreferenceCategory(R.string.emoji_and_symbols, sharedPreferences) {
         val hideUnsupportedEmojis = switch(
             R.string.hide_unsupported_emojis,
@@ -380,6 +461,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
     val clipboard = Clipboard().register()
     val symbols = Symbols().register()
     val advanced = Advanced().register()
+    val voice = Voice().register()
 
     @Keep
     private val onSharedPreferenceChangeListener =
@@ -407,7 +489,8 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             listOf(
                 keyboard,
                 candidates,
-                clipboard
+                clipboard,
+                voice
             ).forEach { category ->
                 category.managedPreferences.forEach {
                     it.value.putValueTo(this@edit)
@@ -432,3 +515,4 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         fun getInstance() = instance!!
     }
 }
+

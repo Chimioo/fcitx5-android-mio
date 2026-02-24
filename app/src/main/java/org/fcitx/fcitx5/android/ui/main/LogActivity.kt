@@ -10,12 +10,13 @@ import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.color.MaterialColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.launch
@@ -28,7 +29,6 @@ import org.fcitx.fcitx5.android.utils.Logcat
 import org.fcitx.fcitx5.android.utils.iso8601UTCDateTime
 import org.fcitx.fcitx5.android.utils.item
 import org.fcitx.fcitx5.android.utils.toast
-import splitties.resources.styledColor
 import splitties.views.topPadding
 
 class LogActivity : AppCompatActivity() {
@@ -77,7 +77,7 @@ class LogActivity : AppCompatActivity() {
             if (intent.hasExtra(FROM_CRASH)) {
                 fromCrash = true
                 supportActionBar!!.setTitle(R.string.crash_logs)
-                AlertDialog.Builder(this@LogActivity)
+                MaterialAlertDialogBuilder(this@LogActivity)
                     .setTitle(R.string.app_crash)
                     .setMessage(R.string.app_crash_message)
                     .setPositiveButton(android.R.string.ok, null)
@@ -97,7 +97,7 @@ class LogActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val iconTint = styledColor(android.R.attr.colorControlNormal)
+        val iconTint = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, 0)
         if (!fromCrash) {
             menu.item(R.string.clear, R.drawable.ic_baseline_delete_24, iconTint, true) {
                 logView.clear()
@@ -114,3 +114,5 @@ class LogActivity : AppCompatActivity() {
         const val CRASH_STACK_TRACE = "crash_stack_trace"
     }
 }
+
+

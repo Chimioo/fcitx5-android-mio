@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2025 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 package org.fcitx.fcitx5.android.ui.main.settings
 
@@ -34,6 +35,7 @@ import org.fcitx.fcitx5.android.ui.main.settings.global.GlobalConfigFragment
 import org.fcitx.fcitx5.android.ui.main.settings.im.InputMethodConfigFragment
 import org.fcitx.fcitx5.android.ui.main.settings.im.InputMethodListFragment
 import org.fcitx.fcitx5.android.ui.main.settings.theme.ThemeFragment
+import org.fcitx.fcitx5.android.ui.main.settings.voice.IflytekVoiceSettingsFragment
 import org.fcitx.fcitx5.android.utils.config.ConfigDescriptor
 import org.fcitx.fcitx5.android.utils.parcelable
 import kotlin.reflect.typeOf
@@ -85,6 +87,9 @@ sealed class SettingsRoute : Parcelable {
 
     @Serializable
     data object Advanced : SettingsRoute()
+
+    @Serializable
+    data object IflytekVoiceInput : SettingsRoute()
 
     @Serializable
     data object Developer : SettingsRoute()
@@ -225,6 +230,9 @@ sealed class SettingsRoute : Parcelable {
             fragment<AdvancedSettingsFragment, Advanced> {
                 label = ctx.getString(R.string.advanced)
             }
+            fragment<IflytekVoiceSettingsFragment, IflytekVoiceInput> {
+                label = ctx.getString(R.string.iflytek_voice_input)
+            }
             fragment<DeveloperFragment, Developer> {
                 label = ctx.getString(R.string.developer)
             }
@@ -257,3 +265,5 @@ sealed class SettingsRoute : Parcelable {
         }
     }
 }
+
+

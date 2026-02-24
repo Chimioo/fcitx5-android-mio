@@ -4,7 +4,6 @@
  */
 package org.fcitx.fcitx5.android.ui.main.settings
 
-import android.app.AlertDialog
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.core.os.bundleOf
@@ -24,6 +23,7 @@ import org.fcitx.fcitx5.android.utils.lazyRoute
 import org.fcitx.fcitx5.android.utils.materialTextInput
 import org.fcitx.fcitx5.android.utils.onPositiveButtonClick
 import org.fcitx.fcitx5.android.utils.str
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import splitties.views.dsl.core.add
 import splitties.views.dsl.core.lParams
 import splitties.views.dsl.core.matchParent
@@ -51,7 +51,7 @@ class QuickPhraseEditFragment : ProgressFragment(), OnItemChangedListener<QuickP
             initialEntries,
         ) {
             override fun showEntry(x: QuickPhraseEntry): String = x.run {
-                "$keyword â†’ ${phrase.replace("\n", "\\n")}"
+                "$keyword â†?${phrase.replace("\n", "\\n")}"
             }
 
             override fun showEditDialog(
@@ -78,7 +78,7 @@ class QuickPhraseEditFragment : ProgressFragment(), OnItemChangedListener<QuickP
                     add(keywordLayout, lParams(matchParent))
                     add(phraseLayout, lParams(matchParent))
                 }
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(title)
                     .setView(layout)
                     .setPositiveButton(android.R.string.ok, null)
@@ -191,3 +191,4 @@ class QuickPhraseEditFragment : ProgressFragment(), OnItemChangedListener<QuickP
     }
 
 }
+

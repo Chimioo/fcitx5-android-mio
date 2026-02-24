@@ -15,7 +15,6 @@ import org.fcitx.fcitx5.android.data.clipboard.db.ClipboardEntry
 import org.fcitx.fcitx5.android.data.theme.Theme
 import org.fcitx.fcitx5.android.utils.DeviceUtil
 import org.fcitx.fcitx5.android.utils.item
-import splitties.resources.styledColor
 import kotlin.math.min
 
 abstract class ClipboardAdapter(
@@ -44,7 +43,7 @@ abstract class ClipboardAdapter(
         /**
          * excerpt text to show on ClipboardEntryUi, to reduce render time of very long text
          * @param str text to excerpt
-         * @param mask mask text content with "â€¢"
+         * @param mask mask text content with "â€?
          * @param lines max output lines
          * @param chars max chars per output line
          */
@@ -98,23 +97,22 @@ abstract class ClipboardAdapter(
             root.setOnLongClickListener {
                 val popup = PopupMenu(ctx, root)
                 val menu = popup.menu
-                val iconTint = ctx.styledColor(android.R.attr.colorControlNormal)
                 if (entry.pinned) {
-                    menu.item(R.string.unpin, R.drawable.ic_outline_push_pin_24, iconTint) {
+                    menu.item(R.string.unpin, R.drawable.ic_outline_push_pin_24) {
                         onUnpin(entry.id)
                     }
                 } else {
-                    menu.item(R.string.pin, R.drawable.ic_baseline_push_pin_24, iconTint) {
+                    menu.item(R.string.pin, R.drawable.ic_baseline_push_pin_24) {
                         onPin(entry.id)
                     }
                 }
-                menu.item(R.string.edit, R.drawable.ic_baseline_edit_24, iconTint) {
+                menu.item(R.string.edit, R.drawable.ic_baseline_edit_24) {
                     onEdit(entry.id)
                 }
-                menu.item(R.string.share, R.drawable.ic_baseline_share_24, iconTint) {
+                menu.item(R.string.share, R.drawable.ic_baseline_share_24) {
                     onShare(entry)
                 }
-                menu.item(R.string.delete, R.drawable.ic_baseline_delete_24, iconTint) {
+                menu.item(R.string.delete, R.drawable.ic_baseline_delete_24) {
                     onDelete(entry.id)
                 }
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !DeviceUtil.isSamsungOneUI && !DeviceUtil.isFlyme) {
@@ -151,3 +149,4 @@ abstract class ClipboardAdapter(
     abstract fun onDelete(id: Int)
 
 }
+

@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2023 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.ui.main.settings
 
 import android.content.Context
@@ -10,7 +11,6 @@ import androidx.annotation.StringRes
 import org.fcitx.fcitx5.android.R
 import splitties.dimensions.dp
 import splitties.resources.resolveThemeAttribute
-import splitties.resources.styledColor
 import splitties.resources.styledDimenPxSize
 import splitties.resources.styledDrawable
 import splitties.views.dsl.constraintlayout.above
@@ -37,13 +37,11 @@ class TableFilesSelectionUi(override val ctx: Context) : Ui {
 
         val title = textView {
             textAppearance = ctx.resolveThemeAttribute(android.R.attr.textAppearanceListItem)
-            setTextColor(styledColor(android.R.attr.textColorPrimary))
             setText(titleRes)
         }
 
         val summary = textView {
             textAppearance = ctx.resolveThemeAttribute(android.R.attr.textAppearanceSmall)
-            setTextColor(styledColor(android.R.attr.textColorSecondary))
             setText(R.string.table_file_placeholder)
         }
 
@@ -93,3 +91,5 @@ class TableFilesSelectionUi(override val ctx: Context) : Ui {
         dict.summary.text = placeholderText
     }
 }
+
+

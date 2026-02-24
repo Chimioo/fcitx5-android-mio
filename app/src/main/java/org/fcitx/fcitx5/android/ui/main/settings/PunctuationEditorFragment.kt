@@ -4,7 +4,6 @@
  */
 package org.fcitx.fcitx5.android.ui.main.settings
 
-import android.app.AlertDialog
 import android.view.View
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.core.RawConfig
@@ -24,6 +23,7 @@ import splitties.views.dsl.core.lParams
 import splitties.views.dsl.core.matchParent
 import splitties.views.dsl.core.verticalLayout
 import splitties.views.setPaddingDp
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class PunctuationEditorFragment : ProgressFragment(), OnItemChangedListener<PunctuationMapEntry> {
 
@@ -108,7 +108,7 @@ class PunctuationEditorFragment : ProgressFragment(), OnItemChangedListener<Punc
                     add(mappingLayout, lParams(matchParent))
                     add(altMappingLayout, lParams(matchParent))
                 }
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(title)
                     .setView(layout)
                     .setPositiveButton(android.R.string.ok, null)
@@ -194,3 +194,4 @@ class PunctuationEditorFragment : ProgressFragment(), OnItemChangedListener<Punc
         const val DEFAULT_LANG = "zh_CN"
     }
 }
+

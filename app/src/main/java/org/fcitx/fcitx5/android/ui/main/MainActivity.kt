@@ -14,7 +14,6 @@ import android.view.Menu
 import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.core.view.ViewCompat
@@ -24,6 +23,8 @@ import androidx.core.view.updateLayoutParams
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.color.MaterialColors
 import org.fcitx.fcitx5.android.BuildConfig
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.data.prefs.AppPrefs
@@ -36,7 +37,6 @@ import org.fcitx.fcitx5.android.utils.navigateWithAnim
 import org.fcitx.fcitx5.android.utils.parcelable
 import org.fcitx.fcitx5.android.utils.startActivity
 import splitties.dimensions.dp
-import splitties.resources.styledColor
 import splitties.views.topPadding
 
 class MainActivity : AppCompatActivity() {
@@ -108,7 +108,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity<SetupActivity>()
             }
             Intent.ACTION_VIEW -> intent.data?.let {
-                AlertDialog.Builder(this)
+                MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.pinyin_dict)
                     .setMessage(R.string.whether_import_dict)
                     .setNegativeButton(android.R.string.cancel) { _, _ -> }
@@ -127,7 +127,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupToolbarMenu(menu: Menu) {
-        val iconTint = styledColor(android.R.attr.colorControlNormal)
+        val iconTint = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, 0)
         menu.item(R.string.save, R.drawable.ic_baseline_save_24, iconTint, true) {
             viewModel.toolbarSaveButtonOnClickListener.value?.invoke()
         }.apply {
@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity() {
             if (!needNotifications) return
             // always show a dialog to explain why we need notification permission,
             // regardless of `shouldShowRequestPermissionRationale(...)`
-            AlertDialog.Builder(this)
+            MaterialAlertDialogBuilder(this)
                 .setIconAttribute(android.R.attr.alertDialogIcon)
                 .setTitle(R.string.notification_permission_title)
                 .setMessage(R.string.notification_permission_message)
@@ -213,3 +213,5 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+
+

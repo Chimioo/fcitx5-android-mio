@@ -5,6 +5,7 @@
 package org.fcitx.fcitx5.android.input.bar.ui
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.view.View
 import android.view.animation.AlphaAnimation
 import android.view.animation.AnimationSet
@@ -172,6 +173,13 @@ class IdleUi(
         hideKeyboardButton.setOnClickListener(callback)
     }
 
+    fun setIflytekVoiceInputActive(active: Boolean) {
+        hideKeyboardButton.image.imageTintList = ColorStateList.valueOf(
+            if (active) theme.accentKeyBackgroundColor else theme.altKeyTextColor
+        )
+        hideKeyboardButton.setOutlined(active, theme.accentKeyBackgroundColor)
+    }
+
     private fun clearAnimation() {
         animator.inAnimation = null
         animator.outAnimation = null
@@ -221,3 +229,5 @@ class IdleUi(
         updateMenuButtonRotation(instant = !fromUser)
     }
 }
+
+

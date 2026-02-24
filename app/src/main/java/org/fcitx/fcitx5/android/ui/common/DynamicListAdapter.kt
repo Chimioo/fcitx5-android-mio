@@ -7,8 +7,8 @@ package org.fcitx.fcitx5.android.ui.common
 import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import android.widget.ImageButton
+import com.google.android.material.checkbox.MaterialCheckBox
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.OnBackPressedDispatcher
 import androidx.annotation.CallSuper
@@ -21,7 +21,7 @@ abstract class DynamicListAdapter<T>(
     initialEntries: List<T>,
     val enableAddAndDelete: Boolean = true,
     val enableOrder: Boolean = false,
-    val initCheckBox: (CheckBox.(T) -> Unit) = { visibility = View.GONE },
+    val initCheckBox: (MaterialCheckBox.(T) -> Unit) = { visibility = View.GONE },
     var initEditButton: (ImageButton.(T) -> Unit) = { visibility = View.GONE },
     var initSettingsButton: (ImageButton.(T) -> Unit) = { visibility = View.GONE }
 ) :
@@ -238,3 +238,4 @@ abstract class DynamicListAdapter<T>(
 
     fun indexItem(item: T): Int = _entries.indexOf(item)
 }
+

@@ -26,10 +26,10 @@ android {
 
     buildTypes {
         release {
-            resValue("string", "app_name", "@string/app_name_release")
+            resValue("string", "app_name", "Fcitx5 (Jyutping Plugin)")
         }
         debug {
-            resValue("string", "app_name", "@string/app_name_debug")
+            resValue("string", "app_name", "Fcitx5 (Jyutping Plugin | Debug)")
         }
     }
 

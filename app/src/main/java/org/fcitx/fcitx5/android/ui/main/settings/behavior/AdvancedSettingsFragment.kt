@@ -2,13 +2,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2024 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.ui.main.settings.behavior
 
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceScreen
@@ -131,7 +132,7 @@ class AdvancedSettingsFragment : ManagedPreferenceFragment(AppPrefs.getInstance(
             }
         }
         screen.addPreference(R.string.import_user_data) {
-            AlertDialog.Builder(ctx)
+            MaterialAlertDialogBuilder(ctx)
                 .setIconAttribute(android.R.attr.alertDialogIcon)
                 .setTitle(R.string.import_user_data)
                 .setMessage(R.string.confirm_import_user_data)
@@ -143,3 +144,5 @@ class AdvancedSettingsFragment : ManagedPreferenceFragment(AppPrefs.getInstance(
         }
     }
 }
+
+

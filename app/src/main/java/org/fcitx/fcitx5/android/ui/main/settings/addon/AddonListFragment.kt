@@ -2,11 +2,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2025 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.ui.main.settings.addon
 
 import android.view.View
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.core.AddonInfo
 import org.fcitx.fcitx5.android.core.FcitxAPI
@@ -66,7 +67,7 @@ class AddonListFragment : ProgressFragment(), OnItemChangedListener<AddonInfo> {
                     }
                     appendLine(getString(R.string.disable_addon_warn_confirm))
                 }
-                AlertDialog.Builder(requireContext())
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(getString(R.string.disable_addon_warn_title))
                     .setIconAttribute(android.R.attr.alertDialogIcon)
                     .setMessage(msg)
@@ -141,3 +142,4 @@ class AddonListFragment : ProgressFragment(), OnItemChangedListener<AddonInfo> {
     }
 
 }
+

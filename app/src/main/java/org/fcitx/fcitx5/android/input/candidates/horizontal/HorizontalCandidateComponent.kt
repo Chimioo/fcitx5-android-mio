@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2025 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 package org.fcitx.fcitx5.android.input.candidates.horizontal
 
@@ -11,7 +12,6 @@ import android.graphics.drawable.shapes.RectShape
 import android.widget.PopupMenu
 import androidx.core.text.bold
 import androidx.core.text.buildSpannedString
-import androidx.core.text.color
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
@@ -42,7 +42,6 @@ import org.fcitx.fcitx5.android.input.dependency.theme
 import org.fcitx.fcitx5.android.utils.item
 import org.mechdancer.dependency.manager.must
 import splitties.dimensions.dp
-import splitties.resources.styledColor
 import kotlin.math.max
 
 class HorizontalCandidateComponent :
@@ -224,9 +223,7 @@ class HorizontalCandidateComponent :
             candidateActionMenu = PopupMenu(context, view).apply {
                 menu.add(buildSpannedString {
                     bold {
-                        color(context.styledColor(android.R.attr.colorAccent)) {
-                            append(text)
-                        }
+                        append(text)
                     }
                 }).apply {
                     isEnabled = false
@@ -244,3 +241,4 @@ class HorizontalCandidateComponent :
         }
     }
 }
+

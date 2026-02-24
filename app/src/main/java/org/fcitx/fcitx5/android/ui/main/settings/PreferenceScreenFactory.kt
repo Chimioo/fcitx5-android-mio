@@ -4,7 +4,7 @@
  */
 package org.fcitx.fcitx5.android.ui.main.settings
 
-import android.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.content.Context
 import android.os.Build
 import androidx.core.content.ContextCompat
@@ -23,7 +23,7 @@ import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.core.Key
 import org.fcitx.fcitx5.android.core.RawConfig
 import org.fcitx.fcitx5.android.data.prefs.AppPrefs
-import org.fcitx.fcitx5.android.ui.main.modified.MySwitchPreference
+import org.fcitx.fcitx5.android.ui.main.modified.MaterialSwitchPreference
 import org.fcitx.fcitx5.android.utils.LongClickPreference
 import org.fcitx.fcitx5.android.utils.buildDocumentsProviderIntent
 import org.fcitx.fcitx5.android.utils.buildPrimaryStorageIntent
@@ -134,7 +134,7 @@ object PreferenceScreenFactory {
 
         fun rimeUserDataDir(title: String): Preference = LongClickPreference(context).apply {
             setOnPreferenceClickListener {
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(context)
                     .setTitle(title)
                     .setMessage(R.string.open_rime_user_data_dir)
                     .setNegativeButton(android.R.string.cancel, null)
@@ -194,7 +194,7 @@ object PreferenceScreenFactory {
         }
 
         when (descriptor) {
-            is ConfigBool -> MySwitchPreference(context).apply {
+            is ConfigBool -> MaterialSwitchPreference(context).apply {
                 summary = descriptor.tooltip
                 setDefaultValue(descriptor.defaultValue)
             }
@@ -298,3 +298,4 @@ object PreferenceScreenFactory {
     }
 
 }
+

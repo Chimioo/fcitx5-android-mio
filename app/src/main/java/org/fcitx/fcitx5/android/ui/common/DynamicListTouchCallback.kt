@@ -16,7 +16,6 @@ import org.fcitx.fcitx5.android.R
 import splitties.dimensions.dp
 import splitties.resources.color
 import splitties.resources.drawable
-import splitties.resources.styledColor
 import kotlin.math.absoluteValue
 
 open class DynamicListTouchCallback<T>(
@@ -37,9 +36,7 @@ open class DynamicListTouchCallback<T>(
     }
 
     private val deleteIcon: Bitmap by lazy {
-        ctx.drawable(R.drawable.ic_baseline_delete_24)!!.apply {
-            setTint(ctx.styledColor(android.R.attr.colorBackground))
-        }.toBitmap()
+        ctx.drawable(R.drawable.ic_baseline_delete_24)!!.toBitmap()
     }
 
     // manually call start drag at the on long click listener
@@ -149,3 +146,4 @@ open class DynamicListTouchCallback<T>(
         reset = true
     }
 }
+

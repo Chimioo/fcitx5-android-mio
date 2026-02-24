@@ -15,6 +15,7 @@ import android.os.Process
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
+import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.plus
@@ -82,6 +83,7 @@ class FcitxApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        DynamicColors.applyToActivitiesIfAvailable(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && !userManager.isUserUnlocked) {
             isDirectBootMode = true
             registerReceiver(unlockReceiver, IntentFilter(Intent.ACTION_USER_UNLOCKED))
@@ -183,3 +185,4 @@ class FcitxApplication : Application() {
         const val PERMISSION_TEST_INPUT_METHOD = "android.permission.READ_INPUT_STATE"
     }
 }
+

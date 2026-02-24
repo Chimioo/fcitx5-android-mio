@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2024 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 package org.fcitx.fcitx5.android.ui.common
 
@@ -11,6 +12,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.lifecycle.LifecycleCoroutineScope
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
@@ -23,6 +25,7 @@ import splitties.views.dsl.core.add
 import splitties.views.dsl.core.horizontalMargin
 import splitties.views.dsl.core.lParams
 import splitties.views.dsl.core.matchParent
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import splitties.views.dsl.core.styles.AndroidStyles
 import splitties.views.dsl.core.textView
 import splitties.views.dsl.core.verticalLayout
@@ -30,9 +33,9 @@ import splitties.views.dsl.core.verticalMargin
 import splitties.views.textAppearance
 
 @Suppress("FunctionName")
-fun Context.ProgressBarDialogIndeterminate(@StringRes title: Int): AlertDialog.Builder {
+fun Context.ProgressBarDialogIndeterminate(@StringRes title: Int): MaterialAlertDialogBuilder {
     val androidStyles = AndroidStyles(this)
-    return AlertDialog.Builder(this)
+    return MaterialAlertDialogBuilder(this)
         .setTitle(title)
         .setView(verticalLayout {
             val shouldAnimate = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -41,7 +44,7 @@ fun Context.ProgressBarDialogIndeterminate(@StringRes title: Int): AlertDialog.B
                 getGlobalSettings<Float>(Settings.Global.ANIMATOR_DURATION_SCALE) > 0f
             }
             add(if (shouldAnimate) {
-                androidStyles.progressBar.horizontal {
+                LinearProgressIndicator(context).apply {
                     isIndeterminate = true
                 }
             } else {
@@ -75,3 +78,5 @@ fun LifecycleCoroutineScope.withLoadingDialog(
         loadingDialog?.dismiss()
     }
 }
+
+

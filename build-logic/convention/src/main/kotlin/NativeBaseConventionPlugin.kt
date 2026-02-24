@@ -2,12 +2,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2025 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 import com.android.build.api.dsl.CommonExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Delete
 import org.gradle.kotlin.dsl.register
+import java.util.Locale
 
 open class NativeBaseConventionPlugin : Plugin<Project> {
 
@@ -23,10 +25,45 @@ open class NativeBaseConventionPlugin : Plugin<Project> {
                 @Suppress("UnstableApiUsage")
                 externalNativeBuild {
                     cmake {
+                        val ecmDir = System.getenv("ECM_DIR")
+                            ?: if (System.getProperty("os.name")
+                                    .lowercase(Locale.ROOT)
+                                    .contains("windows")
+                            ) {
+                                "D:/msys2/ucrt64/share/ECM/cmake"
+                            } else {
+                                null
+                            }
+
+                        val isWindows = System.getProperty("os.name")
+                            .lowercase(Locale.ROOT)
+                            .contains("windows")
+                        val msgfmt = System.getenv("GETTEXT_MSGFMT_EXECUTABLE")
+                            ?: if (isWindows) {
+                                "D:/msys2/ucrt64/bin/msgfmt.exe"
+                            } else {
+                                null
+                            }
+                        val msgmerge = System.getenv("GETTEXT_MSGMERGE_EXECUTABLE")
+                            ?: if (isWindows) {
+                                "D:/msys2/ucrt64/bin/msgmerge.exe"
+                            } else {
+                                null
+                            }
                         arguments(
                             "-DANDROID_STL=c++_shared",
                             "-DVERSION_NAME=${Versions.baseVersionName}",
-                            "-DPREBUILT_DIR=${prebuiltDir.absolutePath}"
+                            "-DPREBUILT_DIR=${prebuiltDir.absolutePath}",
+                            *(ecmDir?.let { arrayOf("-DECM_DIR=$it") }
+                                ?: emptyArray())
+                            ,
+                            *(msgfmt?.let {
+                                arrayOf("-DGETTEXT_MSGFMT_EXECUTABLE=$it")
+                            } ?: emptyArray())
+                            ,
+                            *(msgmerge?.let {
+                                arrayOf("-DGETTEXT_MSGMERGE_EXECUTABLE=$it")
+                            } ?: emptyArray())
                         )
                     }
                 }
@@ -62,3 +99,5 @@ open class NativeBaseConventionPlugin : Plugin<Project> {
     }
 
 }
+
+

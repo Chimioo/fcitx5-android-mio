@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2024-2025 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 package org.fcitx.fcitx5.android.ui.main
 
@@ -21,7 +22,6 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
-import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.os.bundleOf
 import androidx.core.view.ViewCompat
@@ -29,6 +29,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.color.MaterialColors
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import org.fcitx.fcitx5.android.R
@@ -37,7 +39,6 @@ import org.fcitx.fcitx5.android.utils.parcelable
 import org.fcitx.fcitx5.android.utils.subMenu
 import org.fcitx.fcitx5.android.utils.toast
 import splitties.dimensions.dp
-import splitties.resources.styledColor
 import splitties.views.backgroundColor
 import splitties.views.dsl.constraintlayout.below
 import splitties.views.dsl.constraintlayout.bottomOfParent
@@ -119,7 +120,7 @@ class CropImageActivity : AppCompatActivity() {
     private lateinit var cropOption: CropOption
 
     private lateinit var root: ConstraintLayout
-    private lateinit var toolbar: Toolbar
+    private lateinit var toolbar: MaterialToolbar
     private lateinit var cropView: CropImageView
 
     private lateinit var sourceImageUri: Uri
@@ -151,8 +152,7 @@ class CropImageActivity : AppCompatActivity() {
     }
 
     private fun setupRootView() {
-        toolbar = view(::Toolbar) {
-            backgroundColor = styledColor(android.R.attr.colorPrimary)
+        toolbar = view(::MaterialToolbar) {
             elevation = dp(4f)
             navigationIcon = DrawerArrowDrawable(context).apply { progress = 1f }
             setupToolbarMenu(menu)
@@ -183,7 +183,7 @@ class CropImageActivity : AppCompatActivity() {
     }
 
     private fun setupToolbarMenu(menu: Menu) {
-        val iconTint = styledColor(android.R.attr.colorControlNormal)
+        val iconTint = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, 0)
         menu.item(R.string.rotate, R.drawable.ic_baseline_rotate_right_24, iconTint, true) {
             cropView.rotateImage(90)
         }
@@ -207,7 +207,6 @@ class CropImageActivity : AppCompatActivity() {
                 snapRadius = 0f,
                 guidelines = CropImageView.Guidelines.ON_TOUCH,
                 showProgressBar = true,
-                progressBarColor = styledColor(android.R.attr.colorAccent),
                 // CropOverlayView
                 borderLineThickness = dp(1f),
                 borderCornerOffset = 0f,
@@ -257,3 +256,5 @@ class CropImageActivity : AppCompatActivity() {
         finish()
     }
 }
+
+

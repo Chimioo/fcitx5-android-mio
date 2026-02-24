@@ -4,7 +4,6 @@
  */
 package org.fcitx.fcitx5.android.input.dialog
 
-import android.app.AlertDialog
 import android.content.Context
 import android.view.ViewGroup
 import androidx.lifecycle.lifecycleScope
@@ -26,13 +25,13 @@ object InputMethodPickerDialog {
         fcitx: FcitxAPI,
         service: FcitxInputMethodService,
         context: Context
-    ): AlertDialog {
+    ): android.app.AlertDialog {
         val entries = InputMethodData.resolve(fcitx, service)
         val enabledIM = fcitx.inputMethodEntryCached.uniqueName
         val enabledIndex = entries.indexOfFirst { it.uniqueName == enabledIM }
         val dividerIndex = entries.indexOfFirst { it.ime }
-        lateinit var dialog: AlertDialog
-        dialog = AlertDialog.Builder(context)
+        lateinit var dialog: android.app.AlertDialog
+        dialog = android.app.AlertDialog.Builder(context)
             .setTitle(R.string.choose_input_method)
             .setView(context.recyclerView {
                 layoutParams = ViewGroup.LayoutParams(matchParent, wrapContent)
@@ -58,3 +57,5 @@ object InputMethodPickerDialog {
         return dialog
     }
 }
+
+

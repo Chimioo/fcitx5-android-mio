@@ -95,7 +95,13 @@ class MainFragment : PaddingPreferenceFragment() {
                     R.drawable.ic_baseline_more_horiz_24,
                     SettingsRoute.Advanced
                 )
+                addDestinationPreference(
+                    R.string.iflytek_voice_input,
+                    R.drawable.ic_baseline_keyboard_voice_24,
+                    SettingsRoute.IflytekVoiceInput
+                )
             }
         }
     }
 }
+
