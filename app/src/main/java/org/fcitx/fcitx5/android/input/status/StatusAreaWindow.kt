@@ -9,7 +9,6 @@ import android.view.View
 import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.core.text.buildSpannedString
-import androidx.core.text.color
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import org.fcitx.fcitx5.android.R
@@ -34,10 +33,8 @@ import org.fcitx.fcitx5.android.input.wm.InputWindow
 import org.fcitx.fcitx5.android.input.wm.InputWindowManager
 import org.fcitx.fcitx5.android.utils.AppUtil
 import org.fcitx.fcitx5.android.utils.DeviceUtil
-import org.fcitx.fcitx5.android.utils.alpha
 import org.mechdancer.dependency.manager.must
 import splitties.dimensions.dp
-import splitties.resources.styledColor
 import splitties.views.backgroundColor
 import splitties.views.dsl.core.add
 import splitties.views.dsl.core.horizontalLayout
@@ -114,9 +111,7 @@ class StatusAreaWindow : InputWindow.ExtendedInputWindow<StatusAreaWindow>(),
                                     groupId++
                                 } else {
                                     val dividerString = buildSpannedString {
-                                        color(context.styledColor(android.R.attr.colorForeground).alpha(0.4f)) {
-                                            append("──────────")
-                                        }
+                                        append("──────────")
                                     }
                                     menu.add(groupId, 0, 0, dividerString).apply {
                                         isEnabled = false
@@ -220,3 +215,5 @@ class StatusAreaWindow : InputWindow.ExtendedInputWindow<StatusAreaWindow>(),
         popupMenu = null
     }
 }
+
+

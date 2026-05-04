@@ -2,10 +2,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2023 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.ui.main.settings.theme
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -20,18 +20,19 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.MimeTypeMap
-import android.widget.SeekBar
 import androidx.activity.addCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.color.MaterialColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
@@ -49,7 +50,6 @@ import org.fcitx.fcitx5.android.utils.parcelable
 import splitties.dimensions.dp
 import splitties.resources.color
 import splitties.resources.resolveThemeAttribute
-import splitties.resources.styledColor
 import splitties.resources.styledDrawable
 import splitties.views.backgroundColor
 import splitties.views.bottomPadding
@@ -69,7 +69,6 @@ import splitties.views.dsl.constraintlayout.topOfParent
 import splitties.views.dsl.constraintlayout.topToTopOf
 import splitties.views.dsl.core.add
 import splitties.views.dsl.core.matchParent
-import splitties.views.dsl.core.seekBar
 import splitties.views.dsl.core.textView
 import splitties.views.dsl.core.view
 import splitties.views.dsl.core.wrapContent
@@ -104,8 +103,7 @@ class CustomThemeActivity : AppCompatActivity() {
     }
 
     private val toolbar by lazy {
-        view(::Toolbar) {
-            backgroundColor = styledColor(android.R.attr.colorPrimary)
+        view(::MaterialToolbar) {
             elevation = dp(4f)
         }
     }
@@ -140,9 +138,11 @@ class CustomThemeActivity : AppCompatActivity() {
     private val brightnessValue by lazy {
         createTextView()
     }
-    private val brightnessSeekBar by lazy {
-        seekBar {
-            max = 100
+    private val brightnessSlider by lazy {
+        com.google.android.material.slider.Slider(this).apply {
+            valueFrom = 0f
+            valueTo = 100f
+            value = 0f
         }
     }
 
@@ -180,13 +180,13 @@ class CustomThemeActivity : AppCompatActivity() {
                 below(variantLabel)
                 startOfParent(itemMargin)
                 before(brightnessValue)
-                above(brightnessSeekBar)
+                above(brightnessSlider)
             })
             add(brightnessValue, lParams(wrapContent, lineHeight) {
                 topToTopOf(brightnessLabel)
                 endOfParent(itemMargin)
             })
-            add(brightnessSeekBar, lParams(matchConstraints, wrapContent) {
+            add(brightnessSlider, lParams(matchConstraints, wrapContent) {
                 below(brightnessLabel)
                 centerHorizontally(itemMargin)
                 bottomOfParent()
@@ -239,12 +239,12 @@ class CustomThemeActivity : AppCompatActivity() {
         background: Theme.Custom.CustomBackground,
         darkKeys: Boolean
     ) {
-        val template = if (darkKeys) ThemePreset.TransparentLight else ThemePreset.TransparentDark
+        val template = if (darkKeys) ThemePreset.PixelLight else ThemePreset.PixelDark
         theme = template.deriveCustomBackground(
             theme.name,
             background.croppedFilePath,
             background.srcFilePath,
-            brightnessSeekBar.progress,
+            brightnessSlider.value.toInt(),
             background.cropRect,
             background.cropRotation
         )
@@ -274,15 +274,16 @@ class CustomThemeActivity : AppCompatActivity() {
                 srcImageFile = s
             }
             // Use dark keys by default
-            theme = ThemePreset.TransparentDark.deriveCustomBackground(n, c.path, s.path)
+            theme = ThemePreset.PixelDark.deriveCustomBackground(n, c.path, s.path)
         }
         previewUi = KeyboardPreviewUi(this, theme)
+
         if (theme.backgroundImage == null) {
             brightnessLabel.visibility = View.GONE
             cropLabel.visibility = View.GONE
             variantLabel.visibility = View.GONE
             variantSwitch.visibility = View.GONE
-            brightnessSeekBar.visibility = View.GONE
+            brightnessSlider.visibility = View.GONE
         }
         enableEdgeToEdge()
         ViewCompat.setOnApplyWindowInsetsListener(ui) { _, windowInsets ->
@@ -302,7 +303,7 @@ class CustomThemeActivity : AppCompatActivity() {
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         setContentView(ui)
         whenHasBackground { background ->
-            brightnessSeekBar.progress = background.brightness
+            brightnessSlider.value = background.brightness.toFloat()
             variantSwitch.isChecked = !theme.isDark
             launcher = registerForActivityResult(CropContract()) {
                 when (it) {
@@ -337,15 +338,9 @@ class CustomThemeActivity : AppCompatActivity() {
             variantSwitch.setOnCheckedChangeListener { _, isChecked ->
                 setKeyVariant(background, darkKeys = isChecked)
             }
-            brightnessSeekBar.setOnSeekBarChangeListener(object :
-                SeekBar.OnSeekBarChangeListener {
-                override fun onStartTrackingTouch(bar: SeekBar) {}
-                override fun onStopTrackingTouch(bar: SeekBar) {}
-
-                override fun onProgressChanged(bar: SeekBar, progress: Int, fromUser: Boolean) {
-                    if (fromUser) updateState()
-                }
-            })
+            brightnessSlider.addOnChangeListener { _, value, fromUser ->
+                if (fromUser) updateState()
+            }
         }
 
         if (newCreated) {
@@ -384,9 +379,9 @@ class CustomThemeActivity : AppCompatActivity() {
 
     @SuppressLint("SetTextI18n")
     private fun BackgroundStates.updateState() {
-        val progress = brightnessSeekBar.progress
+        val progress = brightnessSlider.value
         brightnessValue.text = "$progress%"
-        filteredDrawable.colorFilter = DarkenColorFilter(100 - progress)
+        filteredDrawable.colorFilter = DarkenColorFilter(100 - progress.toInt())
         previewUi.setBackground(filteredDrawable)
     }
 
@@ -426,7 +421,7 @@ class CustomThemeActivity : AppCompatActivity() {
                     whenHasBackground {
                         newTheme = theme.copy(
                             backgroundImage = it.copy(
-                                brightness = brightnessSeekBar.progress,
+                                brightness = brightnessSlider.value.toInt(),
                                 cropRect = cropRect,
                                 cropRotation = cropRotation
                             )
@@ -455,7 +450,7 @@ class CustomThemeActivity : AppCompatActivity() {
     }
 
     private fun promptDelete() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.delete_theme)
             .setMessage(getString(R.string.delete_theme_msg, theme.name))
             .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -466,13 +461,13 @@ class CustomThemeActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val iconTint = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, 0)
         if (!newCreated) {
-            val iconTint = color(R.color.red_400)
-            menu.item(R.string.save, R.drawable.ic_baseline_delete_24, iconTint, true) {
+            val deleteTint = color(R.color.red_400)
+            menu.item(R.string.save, R.drawable.ic_baseline_delete_24, deleteTint, true) {
                 promptDelete()
             }
         }
-        val iconTint = styledColor(android.R.attr.colorControlNormal)
         menu.item(R.string.save, R.drawable.ic_baseline_check_24, iconTint, true) {
             done()
         }
@@ -492,3 +487,5 @@ class CustomThemeActivity : AppCompatActivity() {
         const val ORIGIN_THEME = "origin_theme"
     }
 }
+
+

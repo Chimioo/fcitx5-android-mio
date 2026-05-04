@@ -2,13 +2,13 @@
  * Copyright (C) 2021-2023 Fcitx 5 for Android Contributors
  * SPDX-License-Identifier: LGPL-2.1-or-later
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 @file:Suppress("DEPRECATION", "OVERRIDE_DEPRECATION")
 
 package org.fcitx.fcitx5.android.lib.plugin_base
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
@@ -29,6 +29,7 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.ListView
 import android.widget.Toast
+import android.app.AlertDialog
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.entity.License
 import org.xmlpull.v1.XmlPullParser
@@ -227,3 +228,5 @@ class AboutActivity : PreferenceActivity() {
     }
 
 }
+
+

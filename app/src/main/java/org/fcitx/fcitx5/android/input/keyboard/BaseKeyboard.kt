@@ -59,6 +59,8 @@ abstract class BaseKeyboard(
 
     private val spaceSwipeMoveCursor = prefs.keyboard.spaceSwipeMoveCursor
     private val spaceKeys = mutableListOf<KeyView>()
+    private var spacePressToTalkActive = false
+
     private val spaceSwipeChangeListener = ManagedPreference.OnChangeListener<Boolean> { _, v ->
         spaceKeys.forEach {
             it.swipeEnabled = v
@@ -166,17 +168,32 @@ abstract class BaseKeyboard(
                 swipeThresholdY = disabledSwipeThreshold
                 onGestureListener = OnGestureListener { view, event ->
                     when (event.type) {
-                        GestureType.Move -> when (val count = event.countX) {
-                            0 -> false
-                            else -> {
-                                val sym =
-                                    if (count > 0) FcitxKeyMapping.FcitxKey_Right else FcitxKeyMapping.FcitxKey_Left
-                                val action = KeyAction.SymAction(KeySym(sym), KeyStates.Virtual)
-                                repeat(count.absoluteValue) {
-                                    onAction(action)
-                                    if (hapticOnRepeat) InputFeedbacks.hapticFeedback(view)
-                                }
+                        GestureType.Up -> {
+                            if (spacePressToTalkActive) {
+                                spacePressToTalkActive = false
+                                onAction(KeyAction.VoicePressToTalkStopAction)
                                 true
+                            } else {
+                                false
+                            }
+                        }
+                        GestureType.Move -> {
+                            if (spacePressToTalkActive) {
+                                true
+                            } else {
+                                when (val count = event.countX) {
+                                    0 -> false
+                                    else -> {
+                                        val sym =
+                                            if (count > 0) FcitxKeyMapping.FcitxKey_Right else FcitxKeyMapping.FcitxKey_Left
+                                        val action = KeyAction.SymAction(KeySym(sym), KeyStates.Virtual)
+                                        repeat(count.absoluteValue) {
+                                            onAction(action)
+                                            if (hapticOnRepeat) InputFeedbacks.hapticFeedback(view)
+                                        }
+                                        true
+                                    }
+                                }
                             }
                         }
                         else -> false
@@ -213,9 +230,26 @@ abstract class BaseKeyboard(
                         }
                     }
                     is KeyDef.Behavior.LongPress -> {
-                        setOnLongClickListener { _ ->
-                            onAction(it.action)
-                            true
+                        if (def is SpaceKey) {
+                            setOnLongClickListener { _ ->
+                                val behavior = prefs.keyboard.spaceKeyLongPressBehavior.getValue()
+                                if (
+                                    behavior == SpaceLongPressBehavior.VoicePressToTalk &&
+                                    prefs.voice.isVoiceInputEnabled.getValue()
+                                ) {
+                                    spacePressToTalkActive = true
+                                    onAction(KeyAction.VoicePressToTalkStartAction)
+                                    true
+                                } else {
+                                    onAction(it.action)
+                                    true
+                                }
+                            }
+                        } else {
+                            setOnLongClickListener { _ ->
+                                onAction(it.action)
+                                true
+                            }
                         }
                     }
                     is KeyDef.Behavior.Repeat -> {
@@ -504,3 +538,4 @@ abstract class BaseKeyboard(
     }
 
 }
+

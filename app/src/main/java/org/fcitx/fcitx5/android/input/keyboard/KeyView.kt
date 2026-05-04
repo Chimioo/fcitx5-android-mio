@@ -58,8 +58,13 @@ abstract class KeyView(ctx: Context, val theme: Theme, val def: KeyDef.Appearanc
     val borderStroke: Boolean
     val rippled: Boolean
     val radius: Float
-    val hMargin: Int
-    val vMargin: Int
+    private val baseHMargin: Int
+    private val baseVMargin: Int
+
+    var hMargin: Int
+        private set
+    var vMargin: Int
+        private set
 
     init {
         val prefs = ThemeManager.prefs
@@ -72,8 +77,10 @@ abstract class KeyView(ctx: Context, val theme: Theme, val def: KeyDef.Appearanc
             if (landscape) prefs.keyHorizontalMarginLandscape else prefs.keyHorizontalMargin
         val vMarginPref =
             if (landscape) prefs.keyVerticalMarginLandscape else prefs.keyVerticalMargin
-        hMargin = if (def.margin) dp(hMarginPref.getValue()) else 0
-        vMargin = if (def.margin) dp(vMarginPref.getValue()) else 0
+        baseHMargin = if (def.margin) dp(hMarginPref.getValue()) else 0
+        baseVMargin = if (def.margin) dp(vMarginPref.getValue()) else 0
+        hMargin = baseHMargin
+        vMargin = baseVMargin
     }
 
     private val cachedLocation = intArrayOf(0, 0)
@@ -117,6 +124,11 @@ abstract class KeyView(ctx: Context, val theme: Theme, val def: KeyDef.Appearanc
         if (def.viewId > 0) {
             id = def.viewId
         }
+        applyBorderAndHighlight()
+        add(appearanceView, lParams(matchParent, matchParent))
+    }
+
+    private fun applyBorderAndHighlight() {
         // key border
         if ((bordered && def.border != Border.Off) || def.border == Border.On) {
             val bkgColor = when (def.variant) {
@@ -142,7 +154,21 @@ abstract class KeyView(ctx: Context, val theme: Theme, val def: KeyDef.Appearanc
                 setupPressHighlight()
             }
         }
-        add(appearanceView, lParams(matchParent, matchParent))
+    }
+
+    open fun setMarginScale(scale: Float) {
+        val s = scale.coerceIn(0.15f, 1.0f)
+        val newH = (baseHMargin * s).roundToInt()
+        val newV = (baseVMargin * s).roundToInt()
+        if (newH == hMargin && newV == vMargin) return
+        hMargin = newH
+        vMargin = newV
+        applyBorderAndHighlight()
+        onMarginChanged()
+        invalidate()
+    }
+
+    protected open fun onMarginChanged() {
     }
 
     private fun setupPressHighlight(mask: Drawable? = null) {
@@ -356,7 +382,7 @@ class AltTextKeyView(ctx: Context, theme: Theme, def: KeyDef.Appearance.AltText)
         altText.visibility = View.GONE
     }
 
-    private fun applyLayout(orientation: Int) {
+    protected fun applyLayout(orientation: Int) {
         when (ThemeManager.prefs.punctuationPosition.getValue()) {
             PunctuationPosition.Bottom -> when (orientation) {
                 Configuration.ORIENTATION_LANDSCAPE -> applyTopRightAltTextPosition()
@@ -365,6 +391,10 @@ class AltTextKeyView(ctx: Context, theme: Theme, def: KeyDef.Appearance.AltText)
             PunctuationPosition.TopRight -> applyTopRightAltTextPosition()
             PunctuationPosition.None -> applyNoAltTextPosition()
         }
+    }
+
+    override fun onMarginChanged() {
+        applyLayout(resources.configuration.orientation)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -451,3 +481,5 @@ class ImageTextKeyView(ctx: Context, theme: Theme, def: KeyDef.Appearance.ImageT
         updateMargins(newConfig.orientation)
     }
 }
+
+

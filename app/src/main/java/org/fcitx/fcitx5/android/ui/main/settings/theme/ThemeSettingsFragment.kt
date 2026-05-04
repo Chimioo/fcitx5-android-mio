@@ -2,13 +2,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2023 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.ui.main.settings.theme
 
 import android.os.Bundle
-import androidx.preference.SwitchPreference
 import org.fcitx.fcitx5.android.data.prefs.ManagedPreference
 import org.fcitx.fcitx5.android.data.prefs.ManagedPreferenceFragment
 import org.fcitx.fcitx5.android.data.theme.ThemeManager
+import org.fcitx.fcitx5.android.ui.main.modified.MaterialSwitchPreference
 
 class ThemeSettingsFragment : ManagedPreferenceFragment(ThemeManager.prefs) {
 
@@ -16,7 +17,7 @@ class ThemeSettingsFragment : ManagedPreferenceFragment(ThemeManager.prefs) {
 
     private var resumed = false
 
-    private lateinit var switchPreference: SwitchPreference
+    private lateinit var switchPreference: MaterialSwitchPreference
 
     // sync SwitchPreference's state when `followSystemDayNightTheme` changed in ThemeListFragment
     private val listener = ManagedPreference.OnChangeListener<Boolean> { _, v ->
@@ -31,7 +32,7 @@ class ThemeSettingsFragment : ManagedPreferenceFragment(ThemeManager.prefs) {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         super.onCreatePreferences(savedInstanceState, rootKey)
-        switchPreference = findPreference(followSystemDayNightTheme.key)!!
+        switchPreference = findPreference<MaterialSwitchPreference>(followSystemDayNightTheme.key)!!
     }
 
     override fun onResume() {
@@ -49,3 +50,5 @@ class ThemeSettingsFragment : ManagedPreferenceFragment(ThemeManager.prefs) {
         super.onDestroy()
     }
 }
+
+

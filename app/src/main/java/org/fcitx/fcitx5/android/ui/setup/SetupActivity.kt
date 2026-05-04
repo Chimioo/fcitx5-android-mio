@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2023 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.ui.setup
 
 import android.app.NotificationChannel
@@ -11,7 +12,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.View
-import android.widget.Button
+import com.google.android.material.button.MaterialButton
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.core.app.NotificationCompat
@@ -33,9 +34,9 @@ class SetupActivity : FragmentActivity() {
 
     private val viewModel: SetupViewModel by viewModels()
 
-    private lateinit var skipButton: Button
-    private lateinit var prevButton: Button
-    private lateinit var nextButton: Button
+    private lateinit var skipButton: MaterialButton
+    private lateinit var prevButton: MaterialButton
+    private lateinit var nextButton: MaterialButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -155,3 +156,5 @@ class SetupActivity : FragmentActivity() {
         fun shouldShowUp() = !shown && SetupPage.hasUndonePage()
     }
 }
+
+

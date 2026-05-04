@@ -5,7 +5,11 @@
 
 package org.fcitx.fcitx5.android.input
 
+<<<<<<< HEAD
 import android.view.View
+=======
+import android.view.MotionEvent
+>>>>>>> blur
 import android.view.WindowInsets
 import android.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -40,6 +44,11 @@ abstract class BaseInputView(
     protected abstract fun onStartHandleFcitxEvent()
 
     protected abstract fun handleFcitxEvent(it: FcitxEvent<*>)
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (service.isHiding) return true
+        return super.dispatchTouchEvent(ev)
+    }
 
     private var eventHandlerJob: Job? = null
 

@@ -2,26 +2,31 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2025 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.ui.main.settings
 
-import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
+
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.app.NotificationCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.color.MaterialColors
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+
 import kotlinx.coroutines.withContext
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.core.reloadQuickPhrase
@@ -43,12 +48,12 @@ import org.fcitx.fcitx5.android.utils.parcelable
 import org.fcitx.fcitx5.android.utils.queryFileName
 import org.fcitx.fcitx5.android.utils.str
 import splitties.resources.drawable
-import splitties.resources.styledColor
 import splitties.views.dsl.core.add
 import splitties.views.dsl.core.lParams
 import splitties.views.dsl.core.matchParent
 import splitties.views.dsl.core.verticalLayout
 import splitties.views.imageDrawable
+
 import splitties.views.setPaddingDp
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -123,9 +128,10 @@ class QuickPhraseListFragment : Fragment(), OnItemChangedListener<QuickPhrase> {
                         }
                     }
                 }
-                imageDrawable = drawable(icon)!!.apply {
-                    setTint(styledColor(android.R.attr.colorControlNormal))
+                val iconDrawable = drawable(icon)!!.apply {
+                    setTint(MaterialColors.getColor(requireContext(), com.google.android.material.R.attr.colorOnSurfaceVariant, 0))
                 }
+                imageDrawable = iconDrawable
             }
         ) {
             init {
@@ -147,7 +153,7 @@ class QuickPhraseListFragment : Fragment(), OnItemChangedListener<QuickPhrase> {
                     getString(R.string.import_from_file),
                     getString(R.string.create_new)
                 )
-                AlertDialog.Builder(requireContext())
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(R.string.quickphrase_editor)
                     .setItems(actions) { _, i ->
                         when (i) {
@@ -167,7 +173,7 @@ class QuickPhraseListFragment : Fragment(), OnItemChangedListener<QuickPhrase> {
                     setPaddingDp(20, 10, 20, 0)
                     add(inputLayout, lParams(matchParent))
                 }
-                AlertDialog.Builder(requireContext())
+                MaterialAlertDialogBuilder(requireContext())
                     .setTitle(R.string.create_new)
                     .setView(layout)
                     .setPositiveButton(android.R.string.ok, null)
@@ -345,3 +351,4 @@ class QuickPhraseListFragment : Fragment(), OnItemChangedListener<QuickPhrase> {
         const val CHANNEL_ID = "quickphrase"
     }
 }
+

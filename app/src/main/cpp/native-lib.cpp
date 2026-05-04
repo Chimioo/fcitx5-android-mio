@@ -5,6 +5,7 @@
 #include <jni.h>
 
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include <memory>
 #include <future>
@@ -81,18 +82,40 @@ public:
         return uv_run(get_event_base(), UV_RUN_ONCE);
     }
 
-    void startup(const std::function<void(fcitx::AddonInstance *)> &setupCallback) {
+    bool startup(const std::function<void(fcitx::AddonInstance *)> &setupCallback) {
         p_instance = std::make_unique<fcitx::Instance>(0, nullptr);
         p_instance->addonManager().registerLoader(std::make_unique<fcitx::AndroidSharedLibraryLoader>());
         p_dispatcher = std::make_unique<fcitx::EventDispatcher>();
         p_dispatcher->attach(&p_instance->eventLoop());
         p_instance->initialize();
+        {
+            auto &globalConfig = p_instance->globalConfig();
+            const auto &disabledAddons = globalConfig.disabledAddons();
+            if (std::find(disabledAddons.begin(), disabledAddons.end(), "androidfrontend") != disabledAddons.end()) {
+                const auto &enabledAddons = globalConfig.enabledAddons();
+                std::set<std::string> enabledSet(enabledAddons.begin(), enabledAddons.end());
+                std::set<std::string> disabledSet(disabledAddons.begin(), disabledAddons.end());
+                enabledSet.insert("androidfrontend");
+                disabledSet.erase("androidfrontend");
+                globalConfig.setEnabledAddons({enabledSet.begin(), enabledSet.end()});
+                globalConfig.setDisabledAddons({disabledSet.begin(), disabledSet.end()});
+                globalConfig.safeSave();
+                p_instance->reloadConfig();
+            }
+        }
         auto &addonMgr = p_instance->addonManager();
         p_frontend = addonMgr.addon("androidfrontend");
+        if (!p_frontend) {
+            FCITX_ERROR() << "Failed to load addon: androidfrontend";
+            p_instance->exit();
+            resetGlobalPointers();
+            return false;
+        }
         p_quickphrase = addonMgr.addon("quickphrase");
         p_unicode = addonMgr.addon("unicode");
         p_clipboard = addonMgr.addon("clipboard", true);
         setupCallback(p_frontend);
+        return true;
     }
 
     void reloadConfig() {
@@ -324,6 +347,9 @@ public:
         const auto &disabledAddons = globalConfig.disabledAddons();
         std::set<std::string> disabledSet(disabledAddons.begin(), disabledAddons.end());
         for (const auto &item: state) {
+            if (item.first == "androidfrontend") {
+                continue;
+            }
             const auto *info = addonManager.addonInfo(item.first);
             if (!info) {
                 continue;
@@ -545,6 +571,21 @@ Java_org_fcitx_fcitx5_android_core_Fcitx_startupFcitx(
             ";"
     );
 
+    const auto pathExists = [](const std::string &p) {
+        return ::access(p.c_str(), F_OK) == 0;
+    };
+    FCITX_INFO() << "appData=" << *appData_;
+    FCITX_INFO() << "usr_share=" << usr_share << " exists=" << pathExists(usr_share);
+    const std::string addon_dir = fcitx::stringutils::joinPath(usr_share, "fcitx5", "addon");
+    const std::string androidfrontend_conf = fcitx::stringutils::joinPath(addon_dir, "androidfrontend.conf");
+    FCITX_INFO() << "addon_dir=" << addon_dir << " exists=" << pathExists(addon_dir);
+    FCITX_INFO() << "androidfrontend.conf=" << androidfrontend_conf << " exists=" << pathExists(androidfrontend_conf);
+    FCITX_INFO() << "FCITX_ADDON_DIRS=" << *appLib_;
+    for (const auto &p: fcitx::stringutils::split(*appLib_, ":")) {
+        const auto so = fcitx::stringutils::joinPath(p, "libandroidfrontend.so");
+        FCITX_INFO() << "checking " << so << " exists=" << pathExists(so);
+    }
+
     // prevent StandardPath from resolving it's hardcoded installation path
     // setenv("SKIP_FCITX_PATH", "1", 1);
     // for fcitx default profile [DefaultInputMethod]
@@ -707,7 +748,7 @@ Java_org_fcitx_fcitx5_android_core_Fcitx_startupFcitx(
     umask(007);
     fcitx::StandardPaths::global().syncUmask();
 
-    Fcitx::Instance().startup([&](auto *androidfrontend) {
+    const bool ok = Fcitx::Instance().startup([&](auto *androidfrontend) {
         FCITX_INFO() << "Setting up callback";
         readyCallback();
         androidfrontend->template call<fcitx::IAndroidFrontend::setCandidateListCallback>(candidateListCallback);
@@ -722,6 +763,10 @@ Java_org_fcitx_fcitx5_android_core_Fcitx_startupFcitx(
         androidfrontend->template call<fcitx::IAndroidFrontend::setSwitchInputMethodCallback>(switchInputMethodCallback);
         androidfrontend->template call<fcitx::IAndroidFrontend::setToastCallback>(toastCallback);
     });
+    if (!ok) {
+        throwJavaException(env, "Failed to start Fcitx: androidfrontend addon not available");
+        return;
+    }
     FCITX_INFO() << "Finishing startup";
 }
 

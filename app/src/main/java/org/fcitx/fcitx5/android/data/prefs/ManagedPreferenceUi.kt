@@ -9,8 +9,12 @@ import androidx.annotation.StringRes
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
+<<<<<<< HEAD
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.ui.main.modified.MySwitchPreference
+=======
+import org.fcitx.fcitx5.android.ui.main.modified.MaterialSwitchPreference
+>>>>>>> blur
 import org.fcitx.fcitx5.android.ui.main.settings.DialogSeekBarPreference
 import org.fcitx.fcitx5.android.ui.main.settings.EditTextIntPreference
 import org.fcitx.fcitx5.android.ui.main.settings.TwinSeekBarPreference
@@ -34,8 +38,8 @@ abstract class ManagedPreferenceUi<T : Preference>(
         @StringRes
         val summary: Int? = null,
         enableUiOn: (() -> Boolean)? = null
-    ) : ManagedPreferenceUi<MySwitchPreference>(key, enableUiOn) {
-        override fun createUi(context: Context) = MySwitchPreference(context).apply {
+    ) : ManagedPreferenceUi<MaterialSwitchPreference>(key, enableUiOn) {
+        override fun createUi(context: Context) = MaterialSwitchPreference(context).apply {
             key = this@Switch.key
             isIconSpaceReserved = false
             isSingleLineTitle = false
@@ -43,6 +47,24 @@ abstract class ManagedPreferenceUi<T : Preference>(
             if (this@Switch.summary != null)
                 setSummary(this@Switch.summary)
             setTitle(this@Switch.title)
+        }
+    }
+
+    class EditTextString(
+        @StringRes
+        val title: Int,
+        key: String,
+        val defaultValue: String,
+        enableUiOn: (() -> Boolean)? = null
+    ) : ManagedPreferenceUi<EditTextPreference>(key, enableUiOn) {
+        override fun createUi(context: Context) = EditTextPreference(context).apply {
+            key = this@EditTextString.key
+            isIconSpaceReserved = false
+            isSingleLineTitle = false
+            summaryProvider = EditTextPreference.SimpleSummaryProvider.getInstance()
+            setDefaultValue(this@EditTextString.defaultValue)
+            setTitle(this@EditTextString.title)
+            setDialogTitle(this@EditTextString.title)
         }
     }
 
@@ -193,3 +215,4 @@ abstract class ManagedPreferenceUi<T : Preference>(
         }
     }
 }
+

@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2024 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.utils
 
 import android.content.Context
@@ -12,8 +13,8 @@ import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceGroup
 import androidx.preference.PreferenceScreen
 import androidx.preference.PreferenceViewHolder
+import com.google.android.material.color.MaterialColors
 import splitties.resources.drawable
-import splitties.resources.styledColor
 
 fun PreferenceScreen.addCategory(title: String, block: PreferenceCategory.() -> Unit) {
     val category = PreferenceCategory(context).apply {
@@ -39,8 +40,8 @@ fun Preference.setup(
     if (icon == null) {
         isIconSpaceReserved = false
     } else {
-        setIcon(context.drawable(icon)?.apply {
-            setTint(context.styledColor(android.R.attr.colorControlNormal))
+        setIcon(context.drawable(icon)!!.apply {
+            setTint(MaterialColors.getColor(context, com.google.android.material.R.attr.colorOnSurfaceVariant, 0))
         })
     }
     onClick?.also {
@@ -106,3 +107,5 @@ fun PreferenceGroup.addPreference(
         setOnPreferenceLongClickListener(onLongClick)
     })
 }
+
+

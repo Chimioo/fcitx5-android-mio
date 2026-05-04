@@ -8,7 +8,7 @@ import android.os.Bundle
 import android.os.Debug
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -20,7 +20,7 @@ import org.fcitx.fcitx5.android.daemon.FcitxDaemon
 import org.fcitx.fcitx5.android.data.clipboard.ClipboardManager
 import org.fcitx.fcitx5.android.data.prefs.AppPrefs
 import org.fcitx.fcitx5.android.ui.common.PaddingPreferenceFragment
-import org.fcitx.fcitx5.android.ui.main.modified.MySwitchPreference
+import org.fcitx.fcitx5.android.ui.main.modified.MaterialSwitchPreference
 import org.fcitx.fcitx5.android.utils.addPreference
 import org.fcitx.fcitx5.android.utils.iso8601UTCDateTime
 import org.fcitx.fcitx5.android.utils.setupForest
@@ -67,7 +67,7 @@ class DeveloperFragment : PaddingPreferenceFragment() {
             addPreference(R.string.real_time_logs) {
                 startActivity<LogActivity>()
             }
-            addPreference(MySwitchPreference(context).apply {
+            addPreference(MaterialSwitchPreference(context).apply {
                 key = AppPrefs.getInstance().internal.verboseLog.key
                 setTitle(R.string.verbose_log)
                 setDefaultValue(false)
@@ -82,7 +82,7 @@ class DeveloperFragment : PaddingPreferenceFragment() {
                     true
                 }
             })
-            addPreference(MySwitchPreference(context).apply {
+            addPreference(MaterialSwitchPreference(context).apply {
                 key = AppPrefs.getInstance().internal.editorInfoInspector.key
                 setTitle(R.string.editor_info_inspector)
                 setDefaultValue(false)
@@ -90,7 +90,7 @@ class DeveloperFragment : PaddingPreferenceFragment() {
                 isSingleLineTitle = false
             })
             addPreference(R.string.restart_fcitx_instance) {
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.restart_fcitx_instance)
                     .setMessage(R.string.restart_fcitx_instance_confirm)
                     .setNegativeButton(android.R.string.cancel, null)
@@ -103,7 +103,7 @@ class DeveloperFragment : PaddingPreferenceFragment() {
                     .show()
             }
             addPreference(R.string.delete_and_sync_data) {
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.delete_and_sync_data)
                     .setMessage(R.string.delete_and_sync_data_message)
                     .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -118,7 +118,7 @@ class DeveloperFragment : PaddingPreferenceFragment() {
                     .show()
             }
             addPreference(R.string.clear_clb_db) {
-                AlertDialog.Builder(context)
+                MaterialAlertDialogBuilder(context)
                     .setTitle(R.string.clear_clb_db)
                     .setMessage(R.string.clear_clp_db_confirm)
                     .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -143,3 +143,4 @@ class DeveloperFragment : PaddingPreferenceFragment() {
     }
 
 }
+

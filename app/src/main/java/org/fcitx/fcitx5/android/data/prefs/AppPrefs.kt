@@ -16,6 +16,7 @@ import org.fcitx.fcitx5.android.input.candidates.expanded.ExpandedCandidateStyle
 import org.fcitx.fcitx5.android.input.candidates.floating.FloatingCandidatesMode
 import org.fcitx.fcitx5.android.input.candidates.floating.FloatingCandidatesOrientation
 import org.fcitx.fcitx5.android.input.candidates.horizontal.HorizontalCandidateMode
+import org.fcitx.fcitx5.android.input.keyboard.FloatingKeyboardShowMode
 import org.fcitx.fcitx5.android.input.keyboard.LangSwitchBehavior
 import org.fcitx.fcitx5.android.input.keyboard.SpaceLongPressBehavior
 import org.fcitx.fcitx5.android.input.keyboard.SwipeSymbolDirection
@@ -31,6 +32,20 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val firstRun = bool("first_run", true)
         val lastSymbolLayout = string("last_symbol_layout", PickerWindow.Key.Symbol.name)
         val lastPickerType = string("last_picker_type", PickerWindow.Key.Emoji.name)
+
+        // Floating keyboard prefs stored separately for portrait/landscape.
+        val floatingKeyboardXPortrait = int("floating_keyboard_x_portrait", 0)
+        val floatingKeyboardYPortrait = int("floating_keyboard_y_portrait", 0)
+        val floatingKeyboardScalePortrait = float("floating_keyboard_scale_portrait", 1.0f)
+        val floatingKeyboardScaleXPortrait = float("floating_keyboard_scale_x_portrait", 1.0f)
+        val floatingKeyboardScaleYPortrait = float("floating_keyboard_scale_y_portrait", 1.0f)
+
+        val floatingKeyboardXLandscape = int("floating_keyboard_x_landscape", 0)
+        val floatingKeyboardYLandscape = int("floating_keyboard_y_landscape", 0)
+        val floatingKeyboardScaleLandscape = float("floating_keyboard_scale_landscape", 1.0f)
+        val floatingKeyboardScaleXLandscape = float("floating_keyboard_scale_x_landscape", 1.0f)
+        val floatingKeyboardScaleYLandscape = float("floating_keyboard_scale_y_landscape", 1.0f)
+
         val verboseLog = bool("verbose_log", false)
         val pid = int("pid", 0)
         val editorInfoInspector = bool("editor_info_inspector", false)
@@ -59,12 +74,18 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
                 "haptic_on_keypress",
                 InputFeedbackMode.FollowingSystem
             )
+
         val hapticOnKeyUp = switch(
             R.string.button_up_haptic_feedback,
             "haptic_on_keyup",
             false
         ) { hapticOnKeyPress.getValue() != InputFeedbackMode.Disabled }
-        val hapticOnRepeat = switch(R.string.haptic_on_repeat, "haptic_on_repeat", false)
+
+        val hapticOnRepeat = switch(
+            R.string.haptic_on_repeat,
+            "haptic_on_repeat",
+            false
+        ) { hapticOnKeyPress.getValue() != InputFeedbackMode.Disabled }
 
         val buttonPressVibrationMilliseconds: ManagedPreference.PInt
         val buttonLongPressVibrationMilliseconds: ManagedPreference.PInt
@@ -141,6 +162,26 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             "keep_keyboard_letters_uppercase",
             false
         )
+<<<<<<< HEAD
+=======
+        val floatingKeyboard = switch(
+            R.string.floating_keyboard,
+            "floating_keyboard",
+            false
+        )
+
+        val floatingKeyboardShowMode = enumList(
+            R.string.floating_keyboard_show_mode,
+            "floating_keyboard_show_mode",
+            FloatingKeyboardShowMode.Always
+        ) { floatingKeyboard.getValue() }
+
+        val floatingKeyboardHideOnFocusLoss = switch(
+            R.string.floating_keyboard_hide_on_focus_loss,
+            "floating_keyboard_hide_on_focus_loss",
+            false
+        ) { floatingKeyboard.getValue() }
+>>>>>>> blur
 
         val showVoiceInputButton =
             switch(R.string.show_voice_input_button, "show_voice_input_button", false)
@@ -351,6 +392,79 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         ) { clipboardListening.getValue() }
     }
 
+    inner class Voice : ManagedPreferenceCategory(R.string.voice_input, sharedPreferences) {
+        val isVoiceInputEnabled = switch(
+            R.string.enable_voice_input,
+            "enable_voice_input",
+            false
+        )
+
+        val voiceEngine = string(
+            R.string.voice_engine,
+            "voice_engine",
+            "iflytek"
+        ) { isVoiceInputEnabled.getValue() }
+
+        // ── iFlytek (RTASR LLM API) ──────────────────────────────────────
+
+        val iflytekAppId = string(
+            R.string.iflytek_app_id,
+            "iflytek_app_id",
+            ""
+        ) { isVoiceInputEnabled.getValue() }
+        val iflytekAccessKeyId = string(
+            R.string.iflytek_access_key_id,
+            "iflytek_access_key_id",
+            ""
+        ) { isVoiceInputEnabled.getValue() }
+        val iflytekAccessKeySecret = string(
+            R.string.iflytek_access_key_secret,
+            "iflytek_access_key_secret",
+            ""
+        ) { isVoiceInputEnabled.getValue() }
+
+        val iflytekLang = string(
+            R.string.iflytek_lang,
+            "iflytek_lang",
+            "autodialect"
+        ) { isVoiceInputEnabled.getValue() }
+
+        // ── Doubao (ByteDance Volcano Engine SAUC ASR) ──────────────────────
+
+        val doubaoApiKey = string(
+            R.string.doubao_api_key,
+            "doubao_api_key",
+            ""
+        ) { isVoiceInputEnabled.getValue() }
+
+        val doubaoResourceId = string(
+            R.string.doubao_resource_id,
+            "doubao_resource_id",
+            "volc.bigasr.sauc.duration"
+        ) { isVoiceInputEnabled.getValue() }
+
+        // ── iFlytek Standard RTASR ──────────────────────────────────────────────
+
+        val iflytekStdAppId = string(
+            R.string.iflytek_std_app_id,
+            "iflytek_std_app_id",
+            ""
+        ) { isVoiceInputEnabled.getValue() }
+
+        val iflytekStdApiKey = string(
+            R.string.iflytek_std_api_key,
+            "iflytek_std_api_key",
+            ""
+        ) { isVoiceInputEnabled.getValue() }
+
+        val iflytekStdLang = string(
+            R.string.iflytek_std_lang,
+            "iflytek_std_lang",
+            "cn"
+        ) { isVoiceInputEnabled.getValue() }
+
+    }
+
     inner class Symbols : ManagedPreferenceCategory(R.string.emoji_and_symbols, sharedPreferences) {
         val hideUnsupportedEmojis = switch(
             R.string.hide_unsupported_emojis,
@@ -385,6 +499,7 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
     val clipboard = Clipboard().register()
     val symbols = Symbols().register()
     val advanced = Advanced().register()
+    val voice = Voice().register()
 
     @Keep
     private val onSharedPreferenceChangeListener =
@@ -412,7 +527,8 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             listOf(
                 keyboard,
                 candidates,
-                clipboard
+                clipboard,
+                voice
             ).forEach { category ->
                 category.managedPreferences.forEach {
                     it.value.putValueTo(this@edit)

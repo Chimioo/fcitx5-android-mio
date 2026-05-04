@@ -2,6 +2,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2026 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 package org.fcitx.fcitx5.android.input
 
@@ -44,6 +45,9 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.core.CapabilityFlags
@@ -65,8 +69,13 @@ import org.fcitx.fcitx5.android.data.theme.Theme
 import org.fcitx.fcitx5.android.data.theme.ThemeManager
 import org.fcitx.fcitx5.android.input.cursor.CursorRange
 import org.fcitx.fcitx5.android.input.cursor.CursorTracker
+import org.fcitx.fcitx5.android.input.voice.VoiceEngineRegistry
+import org.fcitx.fcitx5.android.input.voice.VoiceInputController
+import org.fcitx.fcitx5.android.input.voice.VoiceInputUiState
+import org.fcitx.fcitx5.android.input.voice.engines.doubao.DoubaoSpeechEngine
+import org.fcitx.fcitx5.android.input.voice.engines.iflytek.IflytekSpeechEngine
+import org.fcitx.fcitx5.android.input.voice.engines.iflytek.IflytekStdSpeechEngine
 import org.fcitx.fcitx5.android.utils.InputMethodUtil
-import org.fcitx.fcitx5.android.utils.alpha
 import org.fcitx.fcitx5.android.utils.forceShowSelf
 import org.fcitx.fcitx5.android.utils.inputMethodManager
 import org.fcitx.fcitx5.android.utils.isTypeNull
@@ -75,7 +84,6 @@ import org.fcitx.fcitx5.android.utils.styledFloat
 import org.fcitx.fcitx5.android.utils.withBatchEdit
 import splitties.bitflags.hasFlag
 import splitties.dimensions.dp
-import splitties.resources.styledColor
 import timber.log.Timber
 import kotlin.math.max
 
@@ -102,6 +110,12 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
     private var candidatesView: CandidatesView? = null
 
     private val navbarMgr = NavigationBarManager()
+
+    var isHiding = false
+        private set
+
+    private val themePrefs = ThemeManager.prefs
+
     private val inputDeviceMgr = InputDeviceManager { isVirtualKeyboard ->
         postFcitxJob {
             setCandidatePagingMode(if (isVirtualKeyboard) 0 else 1)
@@ -132,16 +146,26 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
         composingText = FormattedText.Empty
     }
 
+    private fun updateTouchableInsets() {
+        decorView.requestApplyInsets()
+    }
+
     private var cursorUpdateIndex: Int = 0
 
-    private var highlightColor: Int = 0x66008577 // material_deep_teal_500 with alpha 0.4
-
+    private var highlightColor: Int = 0x66008577
     private val prefs = AppPrefs.getInstance()
     private val inlineSuggestions by prefs.keyboard.inlineSuggestions
     private val ignoreSystemCursor by prefs.advanced.ignoreSystemCursor
 
+    private var voiceInputController: VoiceInputController? = null
+
+    private val _voiceInputStatus = MutableSharedFlow<VoiceInputUiState>(replay = 1)
+    val voiceInputStatus: SharedFlow<VoiceInputUiState> = _voiceInputStatus.asSharedFlow()
+
     private val recreateInputViewPrefs: Array<ManagedPreference<*>> = arrayOf(
         prefs.keyboard.expandKeypressArea,
+        prefs.keyboard.floatingKeyboard,
+        prefs.keyboard.floatingKeyboardHideOnFocusLoss,
         prefs.advanced.disableAnimation,
         prefs.advanced.ignoreSystemWindowInsets,
     )
@@ -202,6 +226,10 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
     }
 
     override fun onCreate() {
+        _voiceInputStatus.tryEmit(VoiceInputUiState.Idle)
+        VoiceEngineRegistry.register(IflytekSpeechEngine())
+        VoiceEngineRegistry.register(DoubaoSpeechEngine())
+        VoiceEngineRegistry.register(IflytekStdSpeechEngine())
         fcitx = FcitxDaemon.connect(javaClass.name)
         lifecycleScope.launch {
             jobs.consumeEach { it.join() }
@@ -419,6 +447,19 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
         currentInputConnection.setSelection(target, target)
     }
 
+    /**
+     * 删除光标前的指定字符数（用于语音取消时回退已上屏文字）
+     */
+    fun deleteSurroundingText(beforeLength: Int) {
+        val ic = currentInputConnection ?: return
+        if (beforeLength <= 0) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            ic.deleteSurroundingTextInCodePoints(beforeLength, 0)
+        } else {
+            ic.deleteSurroundingText(beforeLength, 0)
+        }
+    }
+
     fun commitText(text: String, cursor: Int = -1) {
         val ic = currentInputConnection ?: return
         // when composing text equals commit content, finish composing text as-is
@@ -450,6 +491,53 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
                 setSelection(target, target)
             }
         }
+    }
+
+    fun updateComposingFromExternal(text: String) {
+        val formatted = if (text.isBlank()) {
+            FormattedText.Empty
+        } else {
+            FormattedText(arrayOf(text), intArrayOf(0), text.length)
+        }
+        updateComposingText(formatted)
+    }
+
+    private fun ensureVoiceInputController(): VoiceInputController {
+        return voiceInputController ?: run {
+            val engineId = prefs.voice.voiceEngine.getValue()
+            val engine = VoiceEngineRegistry.getEngine(engineId)
+                ?: VoiceEngineRegistry.getDefaultEngine()
+                ?: throw IllegalStateException("No voice engine registered")
+            VoiceInputController(this, this, engine).also {
+                voiceInputController = it
+            }
+        }
+    }
+
+    fun toggleVoiceInput() {
+        if (!prefs.voice.isVoiceInputEnabled.getValue()) return
+        ensureVoiceInputController().toggle()
+    }
+
+    fun startVoiceInput() {
+        if (!prefs.voice.isVoiceInputEnabled.getValue()) return
+        ensureVoiceInputController().start()
+    }
+
+    fun stopVoiceInput() {
+        voiceInputController?.stop()
+    }
+
+    fun cancelVoiceInput() {
+        voiceInputController?.cancel()
+    }
+
+    fun updateVoiceInputStatus(status: VoiceInputUiState) {
+        _voiceInputStatus.tryEmit(status)
+    }
+
+    private fun cancelVoiceInputOnPanelHidden() {
+        voiceInputController?.onPanelHidden()
     }
 
     private fun sendDownKeyEvent(eventTime: Long, keyEventCode: Int, metaState: Int = 0) {
@@ -561,12 +649,27 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
 
     override fun onWindowShown() {
         super.onWindowShown()
-        try {
-            highlightColor = styledColor(android.R.attr.colorAccent).alpha(0.4f)
-        } catch (_: Exception) {
-            Timber.w("Device does not support android.R.attr.colorAccent which it should have.")
-        }
+        isHiding = false
         InputFeedbacks.syncSystemPrefs()
+    }
+
+    override fun onWindowHidden() {
+        super.onWindowHidden()
+        isHiding = false
+    }
+
+    override fun hideWindow() {
+        isHiding = true
+        candidatesView?.visibility = View.INVISIBLE
+        updateTouchableInsets()
+        super.hideWindow()
+    }
+
+    override fun requestHideSelf(flags: Int) {
+        isHiding = true
+        candidatesView?.visibility = View.INVISIBLE
+        updateTouchableInsets()
+        super.requestHideSelf(flags)
     }
 
     override fun onCreateInputView(): View? {
@@ -600,12 +703,43 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
     private var inputViewLocation = intArrayOf(0, 0)
 
     override fun onComputeInsets(outInsets: Insets) {
-        if (inputDeviceMgr.isVirtualKeyboard) {
-            inputView?.keyboardView?.getLocationInWindow(inputViewLocation)
+        if (isHiding) {
             outInsets.apply {
-                contentTopInsets = inputViewLocation[1]
-                visibleTopInsets = inputViewLocation[1]
-                touchableInsets = Insets.TOUCHABLE_INSETS_VISIBLE
+                contentTopInsets = decorView.height
+                visibleTopInsets = decorView.height
+                touchableInsets = Insets.TOUCHABLE_INSETS_REGION
+                touchableRegion.setEmpty()
+            }
+            return
+        }
+        if (inputDeviceMgr.isVirtualKeyboard) {
+            val iv = inputView
+            iv?.keyboardView?.getLocationInWindow(inputViewLocation)
+            val kv = iv?.keyboardView
+            // Use InputView's actual layout state, not a separate calculation
+            if (iv?.isFloatingKeyboardLayoutApplied == true && kv != null) {
+                val x = inputViewLocation[0]
+                val y = inputViewLocation[1]
+                val w = kv.width
+                val h = kv.height
+                outInsets.apply {
+                    // Do not push app content up in floating mode.
+                    // Report the content as fully visible.
+                    contentTopInsets = decorView.height
+                    visibleTopInsets = decorView.height
+                    if (prefs.keyboard.floatingKeyboardHideOnFocusLoss.getValue()) {
+                        touchableInsets = Insets.TOUCHABLE_INSETS_FRAME
+                    } else {
+                        touchableInsets = Insets.TOUCHABLE_INSETS_REGION
+                        touchableRegion.set(x, y, x + w, y + h)
+                    }
+                }
+            } else {
+                outInsets.apply {
+                    contentTopInsets = inputViewLocation[1]
+                    visibleTopInsets = inputViewLocation[1]
+                    touchableInsets = Insets.TOUCHABLE_INSETS_VISIBLE
+                }
             }
         } else {
             val n = decorView.findViewById<View>(android.R.id.navigationBarBackground)?.height ?: 0
@@ -759,6 +893,7 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
 
     override fun onStartInputView(info: EditorInfo, restarting: Boolean) {
         Timber.d("onStartInputView: restarting=$restarting")
+        isHiding = false
         postFcitxJob {
             focus(true)
         }
@@ -1031,6 +1166,7 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
 
     override fun onFinishInputView(finishingInput: Boolean) {
         Timber.d("onFinishInputView: finishingInput=$finishingInput")
+        cancelVoiceInputOnPanelHidden()
         decorLocationUpdated = false
         inputDeviceMgr.onFinishInputView()
         currentInputConnection?.apply {
@@ -1047,6 +1183,7 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
 
     override fun onFinishInput() {
         Timber.d("onFinishInput")
+        cancelVoiceInputOnPanelHidden()
         postFcitxJob {
             focus(false)
         }
@@ -1066,11 +1203,11 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
     }
 
     override fun onDestroy() {
+        ThemeManager.removeOnChangedListener(onThemeChangeListener)
         recreateInputViewPrefs.forEach {
             it.unregisterOnChangeListener(recreateInputViewListener)
         }
         prefs.candidates.unregisterOnChangeListener(recreateCandidatesViewListener)
-        ThemeManager.removeOnChangedListener(onThemeChangeListener)
         super.onDestroy()
         // Fcitx might be used in super.onDestroy()
         FcitxDaemon.disconnect(javaClass.name)

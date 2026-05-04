@@ -27,7 +27,7 @@
         <requestFocus />
     </EditText>
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/clipboard_edit_copy"
         style="?android:attr/buttonBarNeutralButtonStyle"
         android:layout_width="wrap_content"
@@ -39,7 +39,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/clipboard_edit_cancel"
         style="?android:attr/buttonBarNegativeButtonStyle"
         android:layout_width="wrap_content"
@@ -50,7 +50,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/clipboard_edit_ok" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/clipboard_edit_ok"
         style="?android:attr/buttonBarPositiveButtonStyle"
         android:layout_width="wrap_content"

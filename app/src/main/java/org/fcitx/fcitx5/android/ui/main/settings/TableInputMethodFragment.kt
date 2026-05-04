@@ -2,9 +2,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2023 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 package org.fcitx.fcitx5.android.ui.main.settings
 
-import android.app.AlertDialog
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.net.Uri
@@ -15,13 +15,18 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.core.app.NotificationCompat
+import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.daemon.FcitxDaemon
 import org.fcitx.fcitx5.android.data.table.TableBasedInputMethod
@@ -154,7 +159,7 @@ class TableInputMethodFragment : Fragment(), OnItemChangedListener<TableBasedInp
     }
 
     private fun showImportDialog() {
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.import_table)
             .setItems(
                 arrayOf(
@@ -176,7 +181,7 @@ class TableInputMethodFragment : Fragment(), OnItemChangedListener<TableBasedInp
         confUri = null
         dictUri = null
         filesSelectionUi.reset()
-        filesSelectionDialog = AlertDialog.Builder(requireContext())
+        filesSelectionDialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.import_table)
             .setView(filesSelectionUi.root)
             .setPositiveButton(android.R.string.ok, null)
@@ -346,7 +351,7 @@ class TableInputMethodFragment : Fragment(), OnItemChangedListener<TableBasedInp
     }
 
     private fun showReplaceTableDialog(im: TableBasedInputMethod) {
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.update_table)
             .setMessage(getString(R.string.table_dict_replace_message, im.tableFileName))
             .setNeutralButton(R.string.table_file_placeholder) { _, _ ->
@@ -357,7 +362,7 @@ class TableInputMethodFragment : Fragment(), OnItemChangedListener<TableBasedInp
     }
 
     private fun showMissingTableDictDialog(im: TableBasedInputMethod) {
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setIconAttribute(android.R.attr.alertDialogIcon)
             .setTitle(R.string.table_file_does_not_exist_title)
             .setMessage(getString(R.string.table_file_does_not_exist_message, im.tableFileName))
@@ -426,3 +431,4 @@ class TableInputMethodFragment : Fragment(), OnItemChangedListener<TableBasedInp
         const val CHANNEL_ID = "table_dict"
     }
 }
+

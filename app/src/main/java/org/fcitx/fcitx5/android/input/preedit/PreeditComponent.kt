@@ -4,6 +4,7 @@
  */
 package org.fcitx.fcitx5.android.input.preedit
 
+import android.graphics.drawable.GradientDrawable
 import android.view.View
 import org.fcitx.fcitx5.android.core.FcitxEvent
 import org.fcitx.fcitx5.android.data.theme.Theme
@@ -16,7 +17,6 @@ import org.mechdancer.dependency.UniqueComponent
 import org.mechdancer.dependency.manager.ManagedHandler
 import org.mechdancer.dependency.manager.managedHandler
 import splitties.dimensions.dp
-import splitties.views.backgroundColor
 import splitties.views.horizontalPadding
 
 class PreeditComponent : UniqueComponent<PreeditComponent>(), Dependent, InputBroadcastReceiver,
@@ -30,7 +30,10 @@ class PreeditComponent : UniqueComponent<PreeditComponent>(), Dependent, InputBr
         val bkgColor =
             if (!keyBorder && theme is Theme.Builtin) theme.barColor else theme.backgroundColor
         PreeditUi(context, theme, setupTextView = {
-            backgroundColor = bkgColor
+            background = GradientDrawable().apply {
+                setColor(bkgColor)
+                cornerRadius = dp(8).toFloat()
+            }
             horizontalPadding = dp(8)
         }).apply {
             // TODO make it customizable
@@ -44,3 +47,5 @@ class PreeditComponent : UniqueComponent<PreeditComponent>(), Dependent, InputBr
         ui.root.visibility = if (ui.visible) View.VISIBLE else View.INVISIBLE
     }
 }
+
+

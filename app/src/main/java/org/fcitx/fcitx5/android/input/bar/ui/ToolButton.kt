@@ -6,9 +6,15 @@ package org.fcitx.fcitx5.android.input.bar.ui
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
+import android.graphics.drawable.RippleDrawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.StateListDrawable
+import android.graphics.drawable.shapes.OvalShape
 import org.fcitx.fcitx5.android.data.prefs.AppPrefs
 import org.fcitx.fcitx5.android.data.theme.Theme
 import org.fcitx.fcitx5.android.input.keyboard.CustomGestureView
@@ -36,6 +42,10 @@ class ToolButton(context: Context) : CustomGestureView(context) {
         scaleType = ImageView.ScaleType.CENTER_INSIDE
     }
 
+    private var pressHighlightColor: Int = 0
+    private var outlined: Boolean = false
+    private var outlineStrokeColor: Int = 0
+
     constructor(context: Context, @DrawableRes icon: Int, theme: Theme) : this(context) {
         image.imageTintList = ColorStateList.valueOf(theme.altKeyTextColor)
         setIcon(icon)
@@ -48,10 +58,47 @@ class ToolButton(context: Context) : CustomGestureView(context) {
     }
 
     fun setPressHighlightColor(@ColorInt color: Int) {
+        pressHighlightColor = color
+        updateBackground()
+    }
+
+    fun setOutlined(outlined: Boolean, @ColorInt strokeColor: Int) {
+        this.outlined = outlined
+        outlineStrokeColor = strokeColor
+        updateBackground()
+    }
+
+    private fun updateBackground() {
+        if (!outlined) {
+            background = if (disableAnimation) {
+                circlePressHighlightDrawable(pressHighlightColor)
+            } else {
+                borderlessRippleDrawable(pressHighlightColor, dp(20))
+            }
+            return
+        }
+
+        val strokeWidth = dp(2)
+        val border = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setStroke(strokeWidth, outlineStrokeColor)
+            setColor(Color.TRANSPARENT)
+        }
+
         background = if (disableAnimation) {
-            circlePressHighlightDrawable(color)
+            StateListDrawable().apply {
+                addState(intArrayOf(android.R.attr.state_pressed),
+                    ShapeDrawable(OvalShape()).apply { paint.color = pressHighlightColor })
+                addState(intArrayOf(), border)
+            }
         } else {
-            borderlessRippleDrawable(color, dp(20))
+            RippleDrawable(
+                ColorStateList.valueOf(pressHighlightColor),
+                border,
+                ShapeDrawable(OvalShape()).apply { paint.color = Color.WHITE }
+            )
         }
     }
 }
+
+

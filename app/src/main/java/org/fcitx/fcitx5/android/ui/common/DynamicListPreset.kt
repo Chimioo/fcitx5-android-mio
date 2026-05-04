@@ -2,20 +2,21 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2021-2024 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 package org.fcitx.fcitx5.android.ui.common
 
 import android.content.Context
 import android.view.View
-import android.widget.CheckBox
 import android.widget.ImageButton
+import com.google.android.material.checkbox.MaterialCheckBox
 
 @Suppress("FunctionName")
 fun <T> Context.DynamicListUi(
     mode: BaseDynamicListUi.Mode<T>,
     initialEntries: List<T>,
     enableOrder: Boolean = false,
-    initCheckBox: (CheckBox.(T) -> Unit) = { visibility = View.GONE },
+    initCheckBox: (MaterialCheckBox.(T) -> Unit) = { visibility = View.GONE },
     initSettingsButton: (ImageButton.(T) -> Unit) = { visibility = View.GONE },
     show: (T) -> String
 ): BaseDynamicListUi<T> = object :
@@ -37,7 +38,7 @@ fun <T> Context.DynamicListUi(
 @Suppress("FunctionName")
 fun <T> Context.CheckBoxListUi(
     initialEntries: List<T>,
-    initCheckBox: (CheckBox.(T) -> Unit),
+    initCheckBox: (MaterialCheckBox.(T) -> Unit),
     initSettingsButton: (ImageButton.(T) -> Unit),
     show: (T) -> String
 ) = DynamicListUi(
@@ -48,3 +49,5 @@ fun <T> Context.CheckBoxListUi(
     initSettingsButton,
     show
 )
+
+

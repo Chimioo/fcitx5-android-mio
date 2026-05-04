@@ -2,11 +2,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later
  * SPDX-FileCopyrightText: Copyright 2024 Fcitx5 for Android Contributors
  */
+// Modified by Chimioo under LGPL-2.1 license
 
 package org.fcitx.fcitx5.android.utils
 
-import android.app.AlertDialog
 import android.widget.Button
+import androidx.appcompat.app.AlertDialog
 
 val AlertDialog.positiveButton: Button
     get() = getButton(AlertDialog.BUTTON_POSITIVE)
@@ -52,3 +53,5 @@ fun AlertDialog.onNeutralButtonClick(l: AlertDialog.() -> Boolean): AlertDialog 
     }
     return this
 }
+
+

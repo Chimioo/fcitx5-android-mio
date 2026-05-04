@@ -5,12 +5,11 @@
 package org.fcitx.fcitx5.android.ui.common
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import android.widget.ImageButton
+import com.google.android.material.checkbox.MaterialCheckBox
 import androidx.activity.OnBackPressedDispatcher
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
@@ -19,10 +18,13 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.ItemTouchHelper
 import arrow.core.identity
 import com.google.android.material.behavior.HideViewOnScrollBehavior
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import org.fcitx.fcitx5.android.R
@@ -30,7 +32,6 @@ import org.fcitx.fcitx5.android.utils.onPositiveButtonClick
 import org.fcitx.fcitx5.android.utils.str
 import splitties.dimensions.dp
 import splitties.resources.drawable
-import splitties.resources.styledColor
 import splitties.views.backgroundColor
 import splitties.views.bottomPadding
 import splitties.views.dsl.constraintlayout.bottomOfParent
@@ -59,7 +60,7 @@ abstract class BaseDynamicListUi<T>(
     private val mode: Mode<T>,
     initialEntries: List<T>,
     enableOrder: Boolean = false,
-    initCheckBox: (CheckBox.(T) -> Unit) = { visibility = View.GONE },
+    initCheckBox: (MaterialCheckBox.(T) -> Unit) = { visibility = View.GONE },
     initSettingsButton: (ImageButton.(T) -> Unit) = { visibility = View.GONE },
 ) : Ui,
     DynamicListAdapter<T>(
@@ -75,7 +76,7 @@ abstract class BaseDynamicListUi<T>(
 
     protected val fab = view(::FloatingActionButton) {
         imageDrawable = drawable(R.drawable.ic_baseline_plus_24)!!.apply {
-            setTint(styledColor(android.R.attr.colorForegroundInverse))
+            setTint(MaterialColors.getColor(ctx, com.google.android.material.R.attr.colorOnPrimary, 0))
         }
     }
 
@@ -191,7 +192,7 @@ abstract class BaseDynamicListUi<T>(
                     fab.show()
                     fab.setOnClickListener {
                         val items = candidatesSource.map { showEntry(it) }.toTypedArray()
-                        AlertDialog.Builder(ctx)
+                        MaterialAlertDialogBuilder(ctx)
                             .setTitle(R.string.add)
                             .setItems(items) { _, which -> addItem(item = candidatesSource[which]) }
                             .show()
@@ -251,7 +252,7 @@ abstract class BaseDynamicListUi<T>(
                 rightOfParent(dp(20))
             })
         }
-        AlertDialog.Builder(ctx)
+        MaterialAlertDialogBuilder(ctx)
             .setTitle(title)
             .setView(layout)
             .setPositiveButton(android.R.string.ok, null)
@@ -295,7 +296,6 @@ abstract class BaseDynamicListUi<T>(
     }
 
     override val root = coordinatorLayout {
-        backgroundColor = styledColor(android.R.attr.colorBackground)
         add(recyclerView, defaultLParams {
             height = matchParent
             width = matchParent
@@ -372,3 +372,4 @@ abstract class BaseDynamicListUi<T>(
     }
 
 }
+

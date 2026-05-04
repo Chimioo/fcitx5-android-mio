@@ -7,7 +7,7 @@ package org.fcitx.fcitx5.android.ui.main.settings
 import android.content.Context
 import android.content.res.TypedArray
 import android.util.AttributeSet
-import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import androidx.preference.Preference
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.core.Key
@@ -49,7 +49,7 @@ class FcitxKeyPreference : Preference {
 
     private fun showDialog() {
         val ui = KeyPreferenceUi(context).apply { setKey(Key.parse(currentValue)) }
-        AlertDialog.Builder(context)
+        MaterialAlertDialogBuilder(context)
             .setTitle(this@FcitxKeyPreference.title)
             .setView(ui.root)
             .setPositiveButton(android.R.string.ok) { _, _ ->
@@ -71,3 +71,5 @@ class FcitxKeyPreference : Preference {
         }
     }
 }
+
+
