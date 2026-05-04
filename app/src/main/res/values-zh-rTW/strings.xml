@@ -125,6 +125,12 @@
     <string name="punctuation_pos_none">無</string>
     <string name="expand_toolbar_by_default">預設展開工具列</string>
     <string name="popup_on_key_press">按鍵時彈出顯示字元</string>
+    <string name="floating_keyboard">懸浮鍵盤</string>
+    <string name="floating_keyboard_show_mode">懸浮鍵盤出現時機</string>
+    <string name="floating_keyboard_show_always">總是</string>
+    <string name="floating_keyboard_show_portrait">僅直向</string>
+    <string name="floating_keyboard_show_landscape">僅橫向</string>
+    <string name="floating_keyboard_hide_on_focus_loss">丢失焦點時隱藏</string>
     <string name="disable_animation">停用動畫</string>
     <string name="import_from_file">從檔案匯入…</string>
     <string name="duplicate_builtin_theme">複製內建主題…</string>
@@ -155,7 +161,7 @@
     <string name="edit_clipboard">編輯剪貼簿</string>
     <string name="clipboard_edit_text_hint">剪貼簿內容</string>
     <string name="config_addon_not_loaded">尚無可用設定，此附加元件可能在 Fcitx 啟動時處於停用狀態。</string>
-    <string name="portrait">豎屏</string>
+    <string name="portrait">直向</string>
     <string name="landscape">横向畫面</string>
     <string name="keyboard_bottom_padding">鍵盤底部邊距</string>
     <string name="keyboard_side_padding">鍵盤兩側邊距</string>

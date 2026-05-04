@@ -5,6 +5,7 @@
 
 package org.fcitx.fcitx5.android.input
 
+import android.view.MotionEvent
 import android.view.WindowInsets
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.WindowInsetsCompat
@@ -32,6 +33,11 @@ abstract class BaseInputView(
     protected abstract fun onStartHandleFcitxEvent()
 
     protected abstract fun handleFcitxEvent(it: FcitxEvent<*>)
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (service.isHiding) return true
+        return super.dispatchTouchEvent(ev)
+    }
 
     private var eventHandlerJob: Job? = null
 

@@ -20,6 +20,7 @@ import org.fcitx.fcitx5.android.input.bar.ui.idle.ButtonsBarUi
 import org.fcitx.fcitx5.android.input.bar.ui.idle.ClipboardSuggestionUi
 import org.fcitx.fcitx5.android.input.bar.ui.idle.InlineSuggestionsUi
 import org.fcitx.fcitx5.android.input.bar.ui.idle.NumberRow
+import org.fcitx.fcitx5.android.input.bar.ui.idle.VoiceInputStatusUi
 import org.fcitx.fcitx5.android.input.keyboard.CommonKeyActionListener
 import org.fcitx.fcitx5.android.input.popup.PopupComponent
 import splitties.dimensions.dp
@@ -46,7 +47,7 @@ class IdleUi(
 ) : Ui {
 
     enum class State {
-        Empty, Toolbar, Clipboard, NumberRow, InlineSuggestion
+        Empty, Toolbar, Clipboard, NumberRow, InlineSuggestion, VoiceInput
     }
 
     var currentState = State.Empty
@@ -77,6 +78,8 @@ class IdleUi(
 
     val buttonsUi = ButtonsBarUi(ctx, theme)
 
+    val voiceInputStatusUi = VoiceInputStatusUi(ctx, theme)
+
     val clipboardUi = ClipboardSuggestionUi(ctx, theme)
 
     val numberRow = NumberRow(ctx, theme).apply {
@@ -90,6 +93,7 @@ class IdleUi(
         add(buttonsUi.root, lParams(matchParent, matchParent))
         add(clipboardUi.root, lParams(matchParent, matchParent))
         add(inlineSuggestionsBar.root, lParams(matchParent, matchParent))
+        add(voiceInputStatusUi.root, lParams(matchParent, matchParent))
     }
 
     private val inAnimation by lazy {
@@ -173,7 +177,7 @@ class IdleUi(
         hideKeyboardButton.setOnClickListener(callback)
     }
 
-    fun setIflytekVoiceInputActive(active: Boolean) {
+    fun setVoiceInputActive(active: Boolean) {
         hideKeyboardButton.image.imageTintList = ColorStateList.valueOf(
             if (active) theme.accentKeyBackgroundColor else theme.altKeyTextColor
         )
@@ -207,12 +211,18 @@ class IdleUi(
             State.Clipboard -> animator.displayedChild = 2
             State.NumberRow -> {}
             State.InlineSuggestion -> animator.displayedChild = 3
+            State.VoiceInput -> animator.displayedChild = 4
         }
         if (state == State.NumberRow) {
             menuButton.visibility = View.GONE
             hideKeyboardButton.visibility = View.GONE
             animator.visibility = View.GONE
             numberRow.visibility = View.VISIBLE
+        } else if (state == State.VoiceInput) {
+            menuButton.visibility = View.VISIBLE
+            hideKeyboardButton.visibility = View.VISIBLE
+            animator.visibility = View.VISIBLE
+            numberRow.visibility = View.GONE
             numberRow.keyActionListener = commonKeyActionListener.listener
             numberRow.popupActionListener = popup.listener
         } else {

@@ -73,7 +73,6 @@ import splitties.views.dsl.core.textView
 import splitties.views.dsl.core.view
 import splitties.views.dsl.core.wrapContent
 import splitties.views.dsl.core.wrapInScrollView
-import com.google.android.material.slider.Slider
 import splitties.views.gravityVerticalCenter
 import splitties.views.horizontalPadding
 import splitties.views.textAppearance
@@ -140,7 +139,7 @@ class CustomThemeActivity : AppCompatActivity() {
         createTextView()
     }
     private val brightnessSlider by lazy {
-        Slider(this).apply {
+        com.google.android.material.slider.Slider(this).apply {
             valueFrom = 0f
             valueTo = 100f
             value = 0f
@@ -240,7 +239,7 @@ class CustomThemeActivity : AppCompatActivity() {
         background: Theme.Custom.CustomBackground,
         darkKeys: Boolean
     ) {
-        val template = if (darkKeys) ThemePreset.TransparentLight else ThemePreset.TransparentDark
+        val template = if (darkKeys) ThemePreset.PixelLight else ThemePreset.PixelDark
         theme = template.deriveCustomBackground(
             theme.name,
             background.croppedFilePath,
@@ -275,9 +274,10 @@ class CustomThemeActivity : AppCompatActivity() {
                 srcImageFile = s
             }
             // Use dark keys by default
-            theme = ThemePreset.TransparentDark.deriveCustomBackground(n, c.path, s.path)
+            theme = ThemePreset.PixelDark.deriveCustomBackground(n, c.path, s.path)
         }
         previewUi = KeyboardPreviewUi(this, theme)
+
         if (theme.backgroundImage == null) {
             brightnessLabel.visibility = View.GONE
             cropLabel.visibility = View.GONE

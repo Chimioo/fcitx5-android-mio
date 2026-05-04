@@ -33,13 +33,6 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         val lastSymbolLayout = string("last_symbol_layout", PickerWindow.Key.Symbol.name)
         val lastPickerType = string("last_picker_type", PickerWindow.Key.Emoji.name)
 
-        // Legacy floating keyboard prefs (single set). Kept for migration.
-        val floatingKeyboardX = int("floating_keyboard_x", 0)
-        val floatingKeyboardY = int("floating_keyboard_y", 0)
-        val floatingKeyboardScale = float("floating_keyboard_scale", 1.0f)
-        val floatingKeyboardScaleX = float("floating_keyboard_scale_x", 1.0f)
-        val floatingKeyboardScaleY = float("floating_keyboard_scale_y", 1.0f)
-
         // Floating keyboard prefs stored separately for portrait/landscape.
         val floatingKeyboardXPortrait = int("floating_keyboard_x_portrait", 0)
         val floatingKeyboardYPortrait = int("floating_keyboard_y_portrait", 0)
@@ -179,6 +172,12 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             R.string.floating_keyboard_show_mode,
             "floating_keyboard_show_mode",
             FloatingKeyboardShowMode.Always
+        ) { floatingKeyboard.getValue() }
+
+        val floatingKeyboardHideOnFocusLoss = switch(
+            R.string.floating_keyboard_hide_on_focus_loss,
+            "floating_keyboard_hide_on_focus_loss",
+            false
         ) { floatingKeyboard.getValue() }
 
         val showVoiceInputButton =
@@ -386,45 +385,77 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         ) { clipboardListening.getValue() }
     }
 
-    inner class Voice : ManagedPreferenceCategory(R.string.iflytek_voice_input, sharedPreferences) {
-        val enableIflytekVoiceInput = switch(
-            R.string.enable_iflytek_voice_input,
-            "enable_iflytek_voice_input",
+    inner class Voice : ManagedPreferenceCategory(R.string.voice_input, sharedPreferences) {
+        val isVoiceInputEnabled = switch(
+            R.string.enable_voice_input,
+            "enable_voice_input",
             false
         )
+
+        val voiceEngine = string(
+            R.string.voice_engine,
+            "voice_engine",
+            "iflytek"
+        ) { isVoiceInputEnabled.getValue() }
+
+        // ── iFlytek (RTASR LLM API) ──────────────────────────────────────
 
         val iflytekAppId = string(
             R.string.iflytek_app_id,
             "iflytek_app_id",
             ""
-        ) { enableIflytekVoiceInput.getValue() }
-        val iflytekApiKey = string(
-            R.string.iflytek_api_key,
-            "iflytek_api_key",
+        ) { isVoiceInputEnabled.getValue() }
+        val iflytekAccessKeyId = string(
+            R.string.iflytek_access_key_id,
+            "iflytek_access_key_id",
             ""
-        ) { enableIflytekVoiceInput.getValue() }
-        val iflytekApiSecret = string(
-            R.string.iflytek_api_secret,
-            "iflytek_api_secret",
+        ) { isVoiceInputEnabled.getValue() }
+        val iflytekAccessKeySecret = string(
+            R.string.iflytek_access_key_secret,
+            "iflytek_access_key_secret",
             ""
-        ) { enableIflytekVoiceInput.getValue() }
+        ) { isVoiceInputEnabled.getValue() }
 
         val iflytekLang = string(
             R.string.iflytek_lang,
             "iflytek_lang",
             "autodialect"
-        ) { enableIflytekVoiceInput.getValue() }
+        ) { isVoiceInputEnabled.getValue() }
 
-        val iflytekUuid = string(
-            R.string.iflytek_uuid,
-            "iflytek_uuid",
+        // ── Doubao (ByteDance Volcano Engine SAUC ASR) ──────────────────────
+
+        val doubaoApiKey = string(
+            R.string.doubao_api_key,
+            "doubao_api_key",
             ""
-        ) { enableIflytekVoiceInput.getValue() }
-        val iflytekPd = string(
-            R.string.iflytek_pd,
-            "iflytek_pd",
+        ) { isVoiceInputEnabled.getValue() }
+
+        val doubaoResourceId = string(
+            R.string.doubao_resource_id,
+            "doubao_resource_id",
+            "volc.bigasr.sauc.duration"
+        ) { isVoiceInputEnabled.getValue() }
+
+        // ── iFlytek Standard RTASR ──────────────────────────────────────────────
+
+        val iflytekStdAppId = string(
+            R.string.iflytek_std_app_id,
+            "iflytek_std_app_id",
             ""
-        ) { enableIflytekVoiceInput.getValue() }
+        ) { isVoiceInputEnabled.getValue() }
+
+        val iflytekStdApiKey = string(
+            R.string.iflytek_std_api_key,
+            "iflytek_std_api_key",
+            ""
+        ) { isVoiceInputEnabled.getValue() }
+
+        val iflytekStdLang = string(
+            R.string.iflytek_std_lang,
+            "iflytek_std_lang",
+            "cn"
+        ) { isVoiceInputEnabled.getValue() }
+
     }
 
     inner class Symbols : ManagedPreferenceCategory(R.string.emoji_and_symbols, sharedPreferences) {
@@ -515,4 +546,3 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
         fun getInstance() = instance!!
     }
 }
-

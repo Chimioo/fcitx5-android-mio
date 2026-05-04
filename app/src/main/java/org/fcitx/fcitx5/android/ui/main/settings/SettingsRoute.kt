@@ -35,7 +35,7 @@ import org.fcitx.fcitx5.android.ui.main.settings.global.GlobalConfigFragment
 import org.fcitx.fcitx5.android.ui.main.settings.im.InputMethodConfigFragment
 import org.fcitx.fcitx5.android.ui.main.settings.im.InputMethodListFragment
 import org.fcitx.fcitx5.android.ui.main.settings.theme.ThemeFragment
-import org.fcitx.fcitx5.android.ui.main.settings.voice.IflytekVoiceSettingsFragment
+import org.fcitx.fcitx5.android.ui.main.settings.voice.VoiceSettingsFragment
 import org.fcitx.fcitx5.android.utils.config.ConfigDescriptor
 import org.fcitx.fcitx5.android.utils.parcelable
 import kotlin.reflect.typeOf
@@ -89,7 +89,7 @@ sealed class SettingsRoute : Parcelable {
     data object Advanced : SettingsRoute()
 
     @Serializable
-    data object IflytekVoiceInput : SettingsRoute()
+    data object VoiceInput : SettingsRoute()
 
     @Serializable
     data object Developer : SettingsRoute()
@@ -230,8 +230,8 @@ sealed class SettingsRoute : Parcelable {
             fragment<AdvancedSettingsFragment, Advanced> {
                 label = ctx.getString(R.string.advanced)
             }
-            fragment<IflytekVoiceSettingsFragment, IflytekVoiceInput> {
-                label = ctx.getString(R.string.iflytek_voice_input)
+            fragment<VoiceSettingsFragment, VoiceInput> {
+                label = ctx.getString(R.string.voice_input)
             }
             fragment<DeveloperFragment, Developer> {
                 label = ctx.getString(R.string.developer)

@@ -25,9 +25,9 @@ import org.fcitx.fcitx5.android.input.keyboard.CommonKeyActionListener.Backspace
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.CommitAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.DeleteSelectionAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.FcitxKeyAction
-import org.fcitx.fcitx5.android.input.keyboard.KeyAction.IflytekVoicePressToTalkCancelAction
-import org.fcitx.fcitx5.android.input.keyboard.KeyAction.IflytekVoicePressToTalkStartAction
-import org.fcitx.fcitx5.android.input.keyboard.KeyAction.IflytekVoicePressToTalkStopAction
+import org.fcitx.fcitx5.android.input.keyboard.KeyAction.VoicePressToTalkCancelAction
+import org.fcitx.fcitx5.android.input.keyboard.KeyAction.VoicePressToTalkStartAction
+import org.fcitx.fcitx5.android.input.keyboard.KeyAction.VoicePressToTalkStopAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.LangSwitchAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.MoveSelectionAction
 import org.fcitx.fcitx5.android.input.keyboard.KeyAction.PickerSwitchAction
@@ -184,12 +184,12 @@ class CommonKeyActionListener :
                             toggleIme()
                         }
                         SpaceLongPressBehavior.ShowPicker -> showInputMethodPicker()
-                        SpaceLongPressBehavior.IflytekPressToTalk -> {}
+                        SpaceLongPressBehavior.VoicePressToTalk -> {}
                     }
                 }
-                is IflytekVoicePressToTalkStartAction -> service.startIflytekVoiceInput()
-                is IflytekVoicePressToTalkStopAction -> service.stopIflytekVoiceInput()
-                is IflytekVoicePressToTalkCancelAction -> service.cancelIflytekVoiceInput()
+                is VoicePressToTalkStartAction -> service.startVoiceInput()
+                is VoicePressToTalkStopAction -> service.stopVoiceInput()
+                is VoicePressToTalkCancelAction -> service.cancelVoiceInput()
                 else -> {}
             }
         }

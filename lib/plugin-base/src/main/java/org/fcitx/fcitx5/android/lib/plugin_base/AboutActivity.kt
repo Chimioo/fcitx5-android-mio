@@ -29,7 +29,7 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.ListView
 import android.widget.Toast
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import android.app.AlertDialog
 import com.mikepenz.aboutlibraries.Libs
 import com.mikepenz.aboutlibraries.entity.License
 import org.xmlpull.v1.XmlPullParser
@@ -208,7 +208,7 @@ class AboutActivity : PreferenceActivity() {
                 else -> {
                     val licenseArray = licenses.toTypedArray()
                     val licenseNames = licenseArray.map { it.spdxId ?: it.name }.toTypedArray()
-                    MaterialAlertDialogBuilder(context)
+                    AlertDialog.Builder(context)
                         .setTitle(uniqueId)
                         .setItems(licenseNames) { _, idx ->
                             showLicenseContent(licenseArray[idx])

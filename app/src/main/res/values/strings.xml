@@ -130,6 +130,7 @@
     <string name="floating_keyboard_show_always">Always</string>
     <string name="floating_keyboard_show_portrait">Portrait</string>
     <string name="floating_keyboard_show_landscape">Landscape</string>
+    <string name="floating_keyboard_hide_on_focus_loss">Hide on focus loss</string>
     <string name="disable_animation">Disable animation</string>
     <string name="import_from_file">Import from file…</string>
     <string name="duplicate_builtin_theme">Duplicate builtin theme…</string>
@@ -207,7 +208,7 @@
     <string name="space_behavior_enumerate">Enumerate input methods</string>
     <string name="space_behavior_activate">Toggle input method activate state</string>
     <string name="space_behavior_picker">Show input method picker dialog</string>
-    <string name="space_behavior_iflytek_press_to_talk">iFlytek voice input (press and hold)</string>
+    <string name="space_behavior_voice_press_to_talk">Voice input (press and hold)</string>
     <string name="show_lang_switch_key">Show language switch key</string>
     <string name="horizontal_candidate_style">Horizontal candidate style</string>
     <string name="horizontal_candidate_never_fill">Never fill width</string>
@@ -231,6 +232,9 @@
     <string name="main_program">main program</string>
     <string name="edit_theme">Edit Theme</string>
     <string name="show_voice_input_button">Show voice input button</string>
+    <string name="voice_input">Voice Input</string>
+    <string name="enable_voice_input">Enable voice input</string>
+    <string name="voice_engine">Voice engine</string>
     <string name="iflytek_voice_input">iFlytek Voice Input</string>
     <string name="enable_iflytek_voice_input">Enable iFlytek voice input</string>
     <string name="iflytek_app_id">iFlytek App ID</string>
@@ -241,6 +245,16 @@
     <string name="iflytek_lang">Language (lang)</string>
     <string name="iflytek_uuid">UUID (optional)</string>
     <string name="iflytek_pd">Domain (pd, optional)</string>
+    <string name="doubao_api_key">Doubao API Key (X-Api-Key)</string>
+    <string name="doubao_resource_id">Doubao Resource ID</string>
+    <string name="iflytek_std_app_id">iFlytek Standard App ID</string>
+    <string name="iflytek_std_api_key">iFlytek Standard ApiKey</string>
+    <string name="iflytek_std_lang">Language (lang)</string>
+    <string name="voice_engine_iflytek_llm">iFlytek Real-time ASR LLM</string>
+    <string name="voice_engine_doubao">Doubao LLM Streaming ASR</string>
+    <string name="voice_engine_iflytek_std">iFlytek Real-time ASR Standard</string>
+    <string name="voice_permission_required">Microphone permission required</string>
+    <string name="voice_permission_required_message">Please grant microphone permission to use voice input.</string>
     <string name="iflytek_permission_required">Microphone permission required</string>
     <string name="iflytek_permission_required_message">Please grant microphone permission to use voice input.</string>
     <string name="fcitx_daemon">Fcitx Daemon</string>

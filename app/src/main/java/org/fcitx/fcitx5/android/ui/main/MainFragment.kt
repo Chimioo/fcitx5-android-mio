@@ -96,9 +96,9 @@ class MainFragment : PaddingPreferenceFragment() {
                     SettingsRoute.Advanced
                 )
                 addDestinationPreference(
-                    R.string.iflytek_voice_input,
+                    R.string.voice_input,
                     R.drawable.ic_baseline_keyboard_voice_24,
-                    SettingsRoute.IflytekVoiceInput
+                    SettingsRoute.VoiceInput
                 )
             }
         }

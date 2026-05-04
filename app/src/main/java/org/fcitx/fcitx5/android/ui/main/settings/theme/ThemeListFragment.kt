@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.Keep
-import androidx.core.view.ViewCompat
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -184,8 +184,8 @@ class ThemeListFragment : Fragment() {
                             // force AlertDialog's customPanel to grow
                             minimumHeight = Int.MAX_VALUE
                         }
-                        val dialog = MaterialAlertDialogBuilder(ctx)
-                            .setTitle(getString(R.string.duplicate_builtin_theme).removeSuffix("â€?))
+                        val dialog = AlertDialog.Builder(ctx)
+                            .setTitle(getString(R.string.duplicate_builtin_theme).removeSuffix("â€¦"))
                             .setNegativeButton(android.R.string.cancel, null)
                             .setView(view)
                             .create()

@@ -41,9 +41,9 @@ sealed class KeyAction {
 
     data object SpaceLongPressAction : KeyAction()
 
-    data object IflytekVoicePressToTalkStartAction : KeyAction()
-    data object IflytekVoicePressToTalkStopAction : KeyAction()
-    data object IflytekVoicePressToTalkCancelAction : KeyAction()
+    data object VoicePressToTalkStartAction : KeyAction()
+    data object VoicePressToTalkStopAction : KeyAction()
+    data object VoicePressToTalkCancelAction : KeyAction()
 }
 
 

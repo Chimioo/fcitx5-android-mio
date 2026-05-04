@@ -171,7 +171,7 @@ abstract class BaseKeyboard(
                         GestureType.Up -> {
                             if (spacePressToTalkActive) {
                                 spacePressToTalkActive = false
-                                onAction(KeyAction.IflytekVoicePressToTalkStopAction)
+                                onAction(KeyAction.VoicePressToTalkStopAction)
                                 true
                             } else {
                                 false
@@ -234,11 +234,11 @@ abstract class BaseKeyboard(
                             setOnLongClickListener { _ ->
                                 val behavior = prefs.keyboard.spaceKeyLongPressBehavior.getValue()
                                 if (
-                                    behavior == SpaceLongPressBehavior.IflytekPressToTalk &&
-                                    prefs.voice.enableIflytekVoiceInput.getValue()
+                                    behavior == SpaceLongPressBehavior.VoicePressToTalk &&
+                                    prefs.voice.isVoiceInputEnabled.getValue()
                                 ) {
                                     spacePressToTalkActive = true
-                                    onAction(KeyAction.IflytekVoicePressToTalkStartAction)
+                                    onAction(KeyAction.VoicePressToTalkStartAction)
                                     true
                                 } else {
                                     onAction(it.action)

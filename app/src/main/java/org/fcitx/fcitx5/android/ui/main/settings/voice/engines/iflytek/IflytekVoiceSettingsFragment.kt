@@ -3,7 +3,7 @@
  * SPDX-FileCopyrightText: Copyright Chimioo
  */
 // Created by Chimioo under LGPL-2.1 license
-package org.fcitx.fcitx5.android.ui.main.settings.voice
+package org.fcitx.fcitx5.android.ui.main.settings.voice.engines.iflytek
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -18,7 +18,7 @@ class IflytekVoiceSettingsFragment : ManagedPreferenceFragment(AppPrefs.getInsta
     private val prefs = AppPrefs.getInstance()
 
     override fun onPreferenceUiCreated(screen: PreferenceScreen) {
-        val enableKey = prefs.voice.enableIflytekVoiceInput.key
+        val enableKey = prefs.voice.isVoiceInputEnabled.key
         val enablePref = screen.findPreference<Preference>(enableKey) ?: return
         enablePref.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
             val enable = newValue as? Boolean ?: return@OnPreferenceChangeListener true
@@ -31,10 +31,10 @@ class IflytekVoiceSettingsFragment : ManagedPreferenceFragment(AppPrefs.getInsta
             }
 
             MaterialAlertDialogBuilder(requireContext())
-                .setTitle(org.fcitx.fcitx5.android.R.string.iflytek_permission_required)
-                .setMessage(org.fcitx.fcitx5.android.R.string.iflytek_permission_required_message)
+                .setTitle(org.fcitx.fcitx5.android.R.string.voice_permission_required)
+                .setMessage(org.fcitx.fcitx5.android.R.string.voice_permission_required_message)
                 .setNegativeButton(android.R.string.cancel) { _, _ ->
-                    prefs.voice.enableIflytekVoiceInput.setValue(false)
+                    prefs.voice.isVoiceInputEnabled.setValue(false)
                 }
                 .setPositiveButton(org.fcitx.fcitx5.android.R.string.grant_permission) { _, _ ->
                     requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_RECORD_AUDIO)
@@ -52,7 +52,7 @@ class IflytekVoiceSettingsFragment : ManagedPreferenceFragment(AppPrefs.getInsta
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode != REQUEST_RECORD_AUDIO) return
         val granted = grantResults.getOrNull(0) == PackageManager.PERMISSION_GRANTED
-        prefs.voice.enableIflytekVoiceInput.setValue(granted)
+        prefs.voice.isVoiceInputEnabled.setValue(granted)
     }
 
     companion object {

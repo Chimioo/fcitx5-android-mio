@@ -186,9 +186,21 @@ object DataManager {
         val destDescriptorFile = File(dataDir, BuildConfig.DATA_DESCRIPTOR_NAME)
 
         // load last run's data descriptor
-        val oldDescriptor = destDescriptorFile
+        var oldDescriptor = destDescriptorFile
             .runCatching { deserializeDataDescriptor(bufferedReader().use { it.readText() }) }
             .getOrElse { DataDescriptor("", emptyMap(), emptyMap()) }
+
+        val criticalPaths = listOf(
+            "usr/share/fcitx5/addon/androidfrontend.conf",
+            "usr/share/fcitx5/inputmethod/keyboard-us.conf"
+        )
+        if (oldDescriptor.files.isNotEmpty()) {
+            val missing = criticalPaths.filterNot { dataDir.resolve(it).exists() }
+            if (missing.isNotEmpty()) {
+                Timber.w("Critical data missing in ${dataDir.absolutePath}: ${missing.joinToString()}. Forcing resync")
+                oldDescriptor = DataDescriptor("", emptyMap(), emptyMap())
+            }
+        }
 
         // load app's data descriptor
         val mainDescriptor = appContext.assets.getDataDescriptor()

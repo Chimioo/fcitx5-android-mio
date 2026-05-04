@@ -10,6 +10,8 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.Paint
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -196,7 +198,7 @@ class InputView(
         preedit.ui.root.bringToFront()
     }
 
-    private val preeditLayoutChangeListener = View.OnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
+    private val preeditLayoutChangeListener = OnLayoutChangeListener { _, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom ->
         if (!floatingKeyboardLayoutApplied) return@OnLayoutChangeListener
         val w = right - left
         val h = bottom - top
@@ -478,6 +480,7 @@ class InputView(
         if (
             key == floatingKeyboardShowModePref.key ||
             key == keyboardPrefs.floatingKeyboard.key ||
+            key == keyboardPrefs.floatingKeyboardHideOnFocusLoss.key ||
             key == internalPrefs.floatingKeyboardXPortrait.key ||
             key == internalPrefs.floatingKeyboardYPortrait.key ||
             key == internalPrefs.floatingKeyboardScalePortrait.key ||
@@ -616,6 +619,12 @@ class InputView(
         setupFloatingKeyboard()
 
         keyboardPrefs.registerOnChangeListener(onKeyboardSizeChangeListener)
+
+        setOnClickListener {
+            if (isFloatingKeyboardActive && keyboardPrefs.floatingKeyboardHideOnFocusLoss.getValue()) {
+                service.requestHideSelf(0)
+            }
+        }
     }
 
     private fun setupFloatingKeyboard() {
@@ -658,6 +667,7 @@ class InputView(
         restorePreeditViewForNonFloating()
         floatingKeyboardLayoutApplied = false
         updateFloatingUiVisibility()
+
     }
 
     private fun migrateFloatingScaleIfNeeded() {
@@ -725,7 +735,7 @@ class InputView(
         var startViewX = 0f
         var startViewY = 0f
 
-        floatingHandleContainer.setOnTouchListener { v, e ->
+        floatingHandleBar.setOnTouchListener { v, e ->
             if (e.pointerCount != 1) {
                 tracking = false
                 return@setOnTouchListener false
@@ -861,7 +871,7 @@ class InputView(
     }
 
     private fun clearFloatingTouchListeners() {
-        floatingHandleContainer.setOnTouchListener(null)
+        floatingHandleBar.setOnTouchListener(null)
         listOf(
             floatingCornerTL,
             floatingCornerTR,

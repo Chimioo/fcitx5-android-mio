@@ -130,6 +130,7 @@
     <string name="floating_keyboard_show_always">总是</string>
     <string name="floating_keyboard_show_portrait">仅竖屏</string>
     <string name="floating_keyboard_show_landscape">仅横屏</string>
+    <string name="floating_keyboard_hide_on_focus_loss">丢失焦点隐藏</string>
     <string name="disable_animation">禁用动画</string>
     <string name="import_from_file">导入文件…</string>
     <string name="duplicate_builtin_theme">复制内置主题…</string>
@@ -230,6 +231,9 @@
     <string name="main_program">主程序</string>
     <string name="edit_theme">编辑主题</string>
     <string name="show_voice_input_button">显示语音输入按钮</string>
+    <string name="voice_input">语音输入</string>
+    <string name="enable_voice_input">启用语音输入</string>
+    <string name="voice_engine">语音引擎</string>
     <string name="iflytek_voice_input">讯飞语音输入</string>
     <string name="enable_iflytek_voice_input">启用讯飞语音输入</string>
     <string name="iflytek_app_id">讯飞 AppId</string>
@@ -240,6 +244,16 @@
     <string name="iflytek_lang">语言（lang）</string>
     <string name="iflytek_uuid">UUID（可选）</string>
     <string name="iflytek_pd">领域（pd，可选）</string>
+    <string name="doubao_api_key">豆包 API Key</string>
+    <string name="doubao_resource_id">豆包 Resource ID</string>
+    <string name="iflytek_std_app_id">讯飞标准版 AppId</string>
+    <string name="iflytek_std_api_key">讯飞标准版 ApiKey</string>
+    <string name="iflytek_std_lang">语言（lang）</string>
+    <string name="voice_engine_iflytek_llm">讯飞实时语音转写大模型</string>
+    <string name="voice_engine_doubao">豆包大模型流式语音识别</string>
+    <string name="voice_engine_iflytek_std">讯飞实时语音转写标准版</string>
+    <string name="voice_permission_required">需要麦克风权限</string>
+    <string name="voice_permission_required_message">请授予麦克风权限以使用语音输入。</string>
     <string name="iflytek_permission_required">需要麦克风权限</string>
     <string name="iflytek_permission_required_message">请授予麦克风权限以使用语音输入。</string>
     <string name="fcitx_daemon">Fcitx 守护程序</string>
@@ -326,11 +340,11 @@
     <string name="emoji_and_symbols">表情和符号</string>
     <string name="default_emoji_skin_tone">默认表情肤色</string>
     <string name="emoji_skin_tone_none">无</string>
-    <string name="emoji_skin_tone_type_1_2">🏻 浅肤色 (Type-1-2)</string>
-    <string name="emoji_skin_tone_type_3">🏼 中等浅肤色 (Type-3)</string>
-    <string name="emoji_skin_tone_type_4">🏽 中等肤色 (Type-4)</string>
-    <string name="emoji_skin_tone_type_5">🏾 中等深肤色 (Type-5)</string>
-    <string name="emoji_skin_tone_type_6">🏿 深肤色 (Type-6)</string>
+    <string name="emoji_skin_tone_type_1_2">浅肤色 (Type-1-2)</string>
+    <string name="emoji_skin_tone_type_3">中等浅肤色 (Type-3)</string>
+    <string name="emoji_skin_tone_type_4">中等肤色 (Type-4)</string>
+    <string name="emoji_skin_tone_type_5">中等深肤色 (Type-5)</string>
+    <string name="emoji_skin_tone_type_6">深肤色 (Type-6)</string>
     <string name="hide_unsupported_emojis">隐藏不支持的表情</string>
     <string name="key_border_stroke">启用按键边框描边</string>
 </resources>

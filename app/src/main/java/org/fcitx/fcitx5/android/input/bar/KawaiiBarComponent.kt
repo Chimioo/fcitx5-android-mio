@@ -67,6 +67,7 @@ import org.fcitx.fcitx5.android.input.wm.InputWindow
 import org.fcitx.fcitx5.android.input.wm.InputWindowManager
 import org.fcitx.fcitx5.android.utils.AppUtil
 import org.fcitx.fcitx5.android.utils.InputMethodUtil
+import org.fcitx.fcitx5.android.input.voice.VoiceInputUiState
 import org.mechdancer.dependency.DynamicScope
 import org.mechdancer.dependency.manager.must
 import splitties.bitflags.hasFlag
@@ -100,7 +101,7 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
     private val expandToolbarByDefault by prefs.keyboard.expandToolbarByDefault
     private val toolbarNumRowOnPassword by prefs.keyboard.toolbarNumRowOnPassword
     private val showVoiceInputButton by prefs.keyboard.showVoiceInputButton
-    private val enableIflytekVoiceInput by prefs.voice.enableIflytekVoiceInput
+    private val isVoiceInputEnabled by prefs.voice.isVoiceInputEnabled
 
     private var clipboardTimeoutJob: Job? = null
 
@@ -202,8 +203,8 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
         InputMethodUtil.switchInputMethod(service, id, subtype)
     }
 
-    private val toggleIflytekVoiceInputCallback = View.OnClickListener {
-        service.toggleIflytekVoiceInput()
+    private val toggleVoiceInputCallback = View.OnClickListener {
+        service.toggleVoiceInput()
     }
 
     private val idleUi: IdleUi by lazy {
@@ -369,11 +370,39 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
         clipboardItemTimeout.registerOnChangeListener(onClipboardTimeoutUpdateListener)
 
         service.lifecycleScope.launch {
-            service.iflytekVoiceRunning.collectLatest {
-                if (enableIflytekVoiceInput && showVoiceInputButton) {
-                    idleUi.setIflytekVoiceInputActive(it)
+            service.voiceInputStatus.collect { status ->
+                val isActive = status !is VoiceInputUiState.Idle
+                if (isVoiceInputEnabled && showVoiceInputButton) {
+                    idleUi.setVoiceInputActive(isActive)
+                    // 语音激活时，长按麦克风按钮丢弃结果；恢复时清除长按
+                    idleUi.hideKeyboardButton.setOnLongClickListener(
+                        if (isActive) View.OnLongClickListener {
+                            service.cancelVoiceInput()
+                            true
+                        } else null
+                    )
                 } else {
-                    idleUi.setIflytekVoiceInputActive(false)
+                    idleUi.setVoiceInputActive(false)
+                    idleUi.hideKeyboardButton.setOnLongClickListener(null)
+                }
+                // 更新语音状态 UI
+                when (status) {
+                    is VoiceInputUiState.Idle -> {
+                        evalIdleUiState()
+                    }
+                    else -> {
+                        // 仅首次切换到 VoiceInput 时更新状态，后续只更新文本避免动画抽搐
+                        if (idleUi.currentState != IdleUi.State.VoiceInput) {
+                            idleUi.updateState(IdleUi.State.VoiceInput)
+                        }
+                        when (status) {
+                            is VoiceInputUiState.Connecting -> idleUi.voiceInputStatusUi.showConnecting()
+                            is VoiceInputUiState.Listening -> idleUi.voiceInputStatusUi.showListening()
+                            is VoiceInputUiState.Recognizing -> idleUi.voiceInputStatusUi.showRecognizing(status.text)
+                            is VoiceInputUiState.Error -> idleUi.voiceInputStatusUi.showError(status.message)
+                            else -> {}
+                        }
+                    }
                 }
             }
         }
@@ -389,7 +418,7 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
             idleUi.inlineSuggestionsBar.clear()
         }
         voiceInputSubtype = InputMethodUtil.firstVoiceInput()
-        val shouldShowVoiceInput = if (enableIflytekVoiceInput) {
+        val shouldShowVoiceInput = if (isVoiceInputEnabled) {
             showVoiceInputButton && !capFlags.has(CapabilityFlag.Password)
         } else {
             showVoiceInputButton && voiceInputSubtype != null && !capFlags.has(CapabilityFlag.Password)
@@ -397,11 +426,11 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
         idleUi.setHideKeyboardIsVoiceInput(
             shouldShowVoiceInput,
             if (shouldShowVoiceInput) {
-                if (enableIflytekVoiceInput) toggleIflytekVoiceInputCallback else switchToVoiceInputCallback
+                if (isVoiceInputEnabled) toggleVoiceInputCallback else switchToVoiceInputCallback
             } else hideKeyboardCallback
         )
         if (!shouldShowVoiceInput) {
-            idleUi.setIflytekVoiceInputActive(false)
+            idleUi.setVoiceInputActive(false)
         }
         evalIdleUiState()
     }
