@@ -107,11 +107,8 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
     private val expandToolbarByDefault by prefs.keyboard.expandToolbarByDefault
     private val toolbarNumRowOnPassword by prefs.keyboard.toolbarNumRowOnPassword
     private val showVoiceInputButton by prefs.keyboard.showVoiceInputButton
-<<<<<<< HEAD
     private val preferredVoiceInput by prefs.keyboard.preferredVoiceInput
-=======
     private val isVoiceInputEnabled by prefs.voice.isVoiceInputEnabled
->>>>>>> blur
 
     private var clipboardTimeoutJob: Job? = null
 
@@ -450,14 +447,13 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
         clipboardSuggestion.registerOnChangeListener(onClipboardSuggestionUpdateListener)
         clipboardItemTimeout.registerOnChangeListener(onClipboardTimeoutUpdateListener)
 
+        // 麦克风图标与录音逻辑直接同步（不依赖 voiceInputStatus）
         service.lifecycleScope.launch {
-            service.voiceInputStatus.collect { status ->
-                val isActive = status !is VoiceInputUiState.Idle
+            service.voiceInputActive.collect { active ->
                 if (isVoiceInputEnabled && showVoiceInputButton) {
-                    idleUi.setVoiceInputActive(isActive)
-                    // 语音激活时，长按麦克风按钮丢弃结果；恢复时清除长按
+                    idleUi.setVoiceInputActive(active)
                     idleUi.hideKeyboardButton.setOnLongClickListener(
-                        if (isActive) View.OnLongClickListener {
+                        if (active) View.OnLongClickListener {
                             service.cancelVoiceInput()
                             true
                         } else null
@@ -466,6 +462,10 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
                     idleUi.setVoiceInputActive(false)
                     idleUi.hideKeyboardButton.setOnLongClickListener(null)
                 }
+            }
+        }
+        service.lifecycleScope.launch {
+            service.voiceInputStatus.collect { status ->
                 // 更新语音状态 UI
                 when (status) {
                     is VoiceInputUiState.Idle -> {
@@ -499,15 +499,10 @@ class KawaiiBarComponent : UniqueViewComponent<KawaiiBarComponent, FrameLayout>(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             idleUi.inlineSuggestionsBar.clear()
         }
-<<<<<<< HEAD
         voiceInputSubtype = InputMethodUtil.findVoiceSubtype(preferredVoiceInput)
-        val shouldShowVoiceInput =
-=======
-        voiceInputSubtype = InputMethodUtil.firstVoiceInput()
         val shouldShowVoiceInput = if (isVoiceInputEnabled) {
             showVoiceInputButton && !capFlags.has(CapabilityFlag.Password)
         } else {
->>>>>>> blur
             showVoiceInputButton && voiceInputSubtype != null && !capFlags.has(CapabilityFlag.Password)
         }
         idleUi.setHideKeyboardIsVoiceInput(

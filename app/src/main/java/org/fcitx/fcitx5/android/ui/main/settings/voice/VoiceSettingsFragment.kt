@@ -12,6 +12,7 @@ import androidx.preference.PreferenceScreen
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.data.prefs.AppPrefs
+import org.fcitx.fcitx5.android.data.prefs.ManagedPreference
 import org.fcitx.fcitx5.android.data.prefs.ManagedPreferenceFragment
 import org.fcitx.fcitx5.android.input.voice.VoiceEngineRegistry
 
@@ -19,16 +20,22 @@ class VoiceSettingsFragment : ManagedPreferenceFragment(AppPrefs.getInstance().v
 
     private val prefs = AppPrefs.getInstance()
 
+    private val onVoiceEngineChange =
+        ManagedPreference.OnChangeListener<String> { _, _ ->
+            screen?.let { applyEngineVisibility(it) }
+        }
+
+    private var screen: PreferenceScreen? = null
+
     override fun onPreferenceUiCreated(screen: PreferenceScreen) {
+        this.screen = screen
         setupPermissionHandling(screen)
 
         setupEngineSelector(screen)
 
         applyEngineVisibility(screen)
 
-       prefs.voice.voiceEngine.registerOnChangeListener { _, _ ->
-            applyEngineVisibility(screen)
-        }
+        prefs.voice.voiceEngine.registerOnChangeListener(onVoiceEngineChange)
     }
 
     private fun setupPermissionHandling(screen: PreferenceScreen) {

@@ -46,8 +46,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.core.CapabilityFlags
@@ -86,10 +89,10 @@ import splitties.bitflags.hasFlag
 import splitties.dimensions.dp
 import timber.log.Timber
 import kotlin.math.max
+private lateinit var fcitx: FcitxConnection
 
 class FcitxInputMethodService : LifecycleInputMethodService() {
 
-    private lateinit var fcitx: FcitxConnection
 
     private var jobs = Channel<Job>(capacity = Channel.UNLIMITED)
 
@@ -158,9 +161,13 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
     private val ignoreSystemCursor by prefs.advanced.ignoreSystemCursor
 
     private var voiceInputController: VoiceInputController? = null
+    private var cachedEngineId: String? = null
 
     private val _voiceInputStatus = MutableSharedFlow<VoiceInputUiState>(replay = 1)
     val voiceInputStatus: SharedFlow<VoiceInputUiState> = _voiceInputStatus.asSharedFlow()
+
+    private val _voiceInputActive = MutableStateFlow(false)
+    val voiceInputActive: StateFlow<Boolean> = _voiceInputActive.asStateFlow()
 
     private val recreateInputViewPrefs: Array<ManagedPreference<*>> = arrayOf(
         prefs.keyboard.expandKeypressArea,
@@ -503,11 +510,16 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
     }
 
     private fun ensureVoiceInputController(): VoiceInputController {
+        val currentEngineId = prefs.voice.voiceEngine.getValue()
+        if (cachedEngineId != currentEngineId) {
+            voiceInputController = null
+            cachedEngineId = null
+        }
         return voiceInputController ?: run {
-            val engineId = prefs.voice.voiceEngine.getValue()
-            val engine = VoiceEngineRegistry.getEngine(engineId)
+            val engine = VoiceEngineRegistry.getEngine(currentEngineId)
                 ?: VoiceEngineRegistry.getDefaultEngine()
                 ?: throw IllegalStateException("No voice engine registered")
+            cachedEngineId = currentEngineId
             VoiceInputController(this, this, engine).also {
                 voiceInputController = it
             }
@@ -534,6 +546,10 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
 
     fun updateVoiceInputStatus(status: VoiceInputUiState) {
         _voiceInputStatus.tryEmit(status)
+    }
+
+    fun updateVoiceInputActive(active: Boolean) {
+        _voiceInputActive.value = active
     }
 
     private fun cancelVoiceInputOnPanelHidden() {

@@ -5,13 +5,10 @@
 package org.fcitx.fcitx5.android.input.bar.ui
 
 import android.content.Context
-<<<<<<< HEAD
 import android.transition.Slide
 import android.transition.TransitionManager
 import android.transition.TransitionSet
-=======
 import android.content.res.ColorStateList
->>>>>>> blur
 import android.view.View
 import android.view.Gravity
 import android.view.animation.AlphaAnimation
@@ -240,8 +237,6 @@ class IdleUi(
             State.VoiceInput -> animator.displayedChild = 4
         }
         if (state == State.NumberRow) {
-<<<<<<< HEAD
-=======
             menuButton.visibility = View.GONE
             hideKeyboardButton.visibility = View.GONE
             animator.visibility = View.GONE
@@ -251,14 +246,7 @@ class IdleUi(
             hideKeyboardButton.visibility = View.VISIBLE
             animator.visibility = View.VISIBLE
             numberRow.visibility = View.GONE
->>>>>>> blur
-            numberRow.keyActionListener = commonKeyActionListener.listener
-            numberRow.popupActionListener = popup.listener
-            if (fromUser && !disableAnimation) {
-                enableSlideTransition(numberRow, idleBody, Gravity.END, Gravity.START)
-            }
-            numberRow.visibility = View.VISIBLE
-            idleBody.visibility = View.GONE
+            idleBody.visibility = View.VISIBLE
         } else if (currentState == State.NumberRow) {
             if (fromUser && !disableAnimation) {
                 enableSlideTransition(idleBody, numberRow, Gravity.START, Gravity.END)

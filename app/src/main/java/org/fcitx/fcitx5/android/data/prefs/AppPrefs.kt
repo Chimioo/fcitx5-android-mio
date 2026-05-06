@@ -162,8 +162,6 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             "keep_keyboard_letters_uppercase",
             false
         )
-<<<<<<< HEAD
-=======
         val floatingKeyboard = switch(
             R.string.floating_keyboard,
             "floating_keyboard",
@@ -181,7 +179,6 @@ class AppPrefs(private val sharedPreferences: SharedPreferences) {
             "floating_keyboard_hide_on_focus_loss",
             false
         ) { floatingKeyboard.getValue() }
->>>>>>> blur
 
         val showVoiceInputButton =
             switch(R.string.show_voice_input_button, "show_voice_input_button", false)

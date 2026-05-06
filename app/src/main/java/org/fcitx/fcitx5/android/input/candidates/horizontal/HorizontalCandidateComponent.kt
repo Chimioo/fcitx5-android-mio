@@ -9,12 +9,6 @@ package org.fcitx.fcitx5.android.input.candidates.horizontal
 import android.content.res.Configuration
 import android.graphics.drawable.ShapeDrawable
 import android.graphics.drawable.shapes.RectShape
-<<<<<<< HEAD
-=======
-import android.widget.PopupMenu
-import androidx.core.text.bold
-import androidx.core.text.buildSpannedString
->>>>>>> blur
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.flexbox.FlexboxLayoutManager
@@ -204,46 +198,4 @@ class HorizontalCandidateComponent :
             refreshExpanded(0)
         }
     }
-<<<<<<< HEAD
 }
-=======
-
-    private fun triggerCandidateAction(idx: Int, actionIdx: Int) {
-        fcitx.runIfReady { triggerCandidateAction(idx, actionIdx) }
-    }
-
-    private var candidateActionMenu: PopupMenu? = null
-
-    fun showCandidateActionMenu(holder: CandidateViewHolder) {
-        val idx = holder.idx
-        val text = holder.text
-        val view = holder.ui.root
-        candidateActionMenu?.dismiss()
-        candidateActionMenu = null
-        service.lifecycleScope.launch {
-            val actions = fcitx.runOnReady { getCandidateActions(idx) }
-            if (actions.isEmpty()) return@launch
-            InputFeedbacks.hapticFeedback(view, longPress = true)
-            candidateActionMenu = PopupMenu(context, view).apply {
-                menu.add(buildSpannedString {
-                    bold {
-                        append(text)
-                    }
-                }).apply {
-                    isEnabled = false
-                }
-                actions.forEach { action ->
-                    menu.item(action.text) {
-                        triggerCandidateAction(idx, action.id)
-                    }
-                }
-                setOnDismissListener {
-                    candidateActionMenu = null
-                }
-                show()
-            }
-        }
-    }
-}
-
->>>>>>> blur

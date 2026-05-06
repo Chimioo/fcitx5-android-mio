@@ -20,14 +20,16 @@ android {
         externalNativeBuild {
             cmake {
                 targets(
-                    // jni
                     "native-lib",
-                    // copy fcitx5 built-in addon libraries
                     "copy-fcitx5-modules",
-                    // android specific modules
                     "androidfrontend",
                     "androidkeyboard",
                     "androidnotification"
+                )
+                // 指定 Gettext 工具路径
+                arguments(
+                    "-DGETTEXT_MSGMERGE_EXECUTABLE=D:/msys2/mingw64/bin/msgmerge.exe",
+                    "-DGETTEXT_MSGFMT_EXECUTABLE=D:/msys2/mingw64/bin/msgfmt.exe"
                 )
             }
         }
@@ -40,19 +42,10 @@ android {
 
     buildTypes {
         release {
-<<<<<<< HEAD
             resValue("mipmap", "app_icon", "@mipmap/ic_launcher")
             resValue("mipmap", "app_icon_round", "@mipmap/ic_launcher_round")
             resValue("string", "app_name", "@string/app_name_release")
             proguardFile("proguard-rules.pro")
-=======
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-
-            resValue("string", "app_name", "Fcitx5")
->>>>>>> blur
         }
         debug {
             resValue("string", "app_name", "Fcitx5 (Debug)")

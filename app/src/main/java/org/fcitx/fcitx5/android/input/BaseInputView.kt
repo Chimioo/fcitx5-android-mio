@@ -5,11 +5,8 @@
 
 package org.fcitx.fcitx5.android.input
 
-<<<<<<< HEAD
 import android.view.View
-=======
 import android.view.MotionEvent
->>>>>>> blur
 import android.view.WindowInsets
 import android.widget.PopupMenu
 import androidx.constraintlayout.widget.ConstraintLayout

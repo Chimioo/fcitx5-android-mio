@@ -17,21 +17,8 @@
       ],
       "attributes": [],
       "versionCode": 101,
-      "versionName": "5f202252",
-      "outputFile": "org.fcitx.fcitx5.android-5f202252-armeabi-v7a-release.apk"
-    },
-    {
-      "type": "ONE_OF_MANY",
-      "filters": [
-        {
-          "filterType": "ABI",
-          "value": "x86_64"
-        }
-      ],
-      "attributes": [],
-      "versionCode": 104,
-      "versionName": "5f202252",
-      "outputFile": "org.fcitx.fcitx5.android-5f202252-x86_64-release.apk"
+      "versionName": "0.1.2-61-ge88cb2dc",
+      "outputFile": "org.fcitx.fcitx5.android-0.1.2-61-ge88cb2dc-armeabi-v7a-release.apk"
     },
     {
       "type": "ONE_OF_MANY",
@@ -43,8 +30,8 @@
       ],
       "attributes": [],
       "versionCode": 103,
-      "versionName": "5f202252",
-      "outputFile": "org.fcitx.fcitx5.android-5f202252-x86-release.apk"
+      "versionName": "0.1.2-61-ge88cb2dc",
+      "outputFile": "org.fcitx.fcitx5.android-0.1.2-61-ge88cb2dc-x86-release.apk"
     },
     {
       "type": "ONE_OF_MANY",
@@ -56,8 +43,21 @@
       ],
       "attributes": [],
       "versionCode": 102,
-      "versionName": "5f202252",
-      "outputFile": "org.fcitx.fcitx5.android-5f202252-arm64-v8a-release.apk"
+      "versionName": "0.1.2-61-ge88cb2dc",
+      "outputFile": "org.fcitx.fcitx5.android-0.1.2-61-ge88cb2dc-arm64-v8a-release.apk"
+    },
+    {
+      "type": "ONE_OF_MANY",
+      "filters": [
+        {
+          "filterType": "ABI",
+          "value": "x86_64"
+        }
+      ],
+      "attributes": [],
+      "versionCode": 104,
+      "versionName": "0.1.2-61-ge88cb2dc",
+      "outputFile": "org.fcitx.fcitx5.android-0.1.2-61-ge88cb2dc-x86_64-release.apk"
     }
   ],
   "elementType": "File",

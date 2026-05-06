@@ -4,11 +4,7 @@
  */
 package org.fcitx.fcitx5.android.ui.main.settings
 
-<<<<<<< HEAD
-import android.app.AlertDialog
 import android.os.Bundle
-=======
->>>>>>> blur
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.lifecycle.lifecycleScope
@@ -54,7 +50,7 @@ class QuickPhraseEditFragment : ProgressFragment(), OnItemChangedListener<QuickP
             initialEntries,
         ) {
             override fun showEntry(x: QuickPhraseEntry): String = x.run {
-                "$keyword â†?${phrase.replace("\n", "\\n")}"
+                "$keyword ï¿½?${phrase.replace("\n", "\\n")}"
             }
 
             override fun showEditDialog(

@@ -9,12 +9,8 @@ import androidx.annotation.StringRes
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.Preference
-<<<<<<< HEAD
 import org.fcitx.fcitx5.android.R
-import org.fcitx.fcitx5.android.ui.main.modified.MySwitchPreference
-=======
 import org.fcitx.fcitx5.android.ui.main.modified.MaterialSwitchPreference
->>>>>>> blur
 import org.fcitx.fcitx5.android.ui.main.settings.DialogSeekBarPreference
 import org.fcitx.fcitx5.android.ui.main.settings.EditTextIntPreference
 import org.fcitx.fcitx5.android.ui.main.settings.TwinSeekBarPreference

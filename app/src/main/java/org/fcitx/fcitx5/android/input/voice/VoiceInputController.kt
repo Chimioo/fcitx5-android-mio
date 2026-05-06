@@ -35,11 +35,11 @@ class VoiceInputController(
 
     private val prefs = AppPrefs.getInstance()
 
-    private var running = false
+    @Volatile private var running = false
     private var stableText: String = ""
     private var currentPartial: String = ""
     private var commitOnStop: Boolean = false
-    private var finalized: Boolean = false
+    @Volatile private var finalized: Boolean = false
     @Volatile private var lastShownText: String = ""
     @Volatile private var committedText: String = ""
 
@@ -91,6 +91,7 @@ class VoiceInputController(
         stopTimeoutDeferred?.cancel()
         stopTimeoutDeferred = null
         running = true
+        service.updateVoiceInputActive(true)
         stableText = ""
         currentPartial = ""
         commitOnStop = true
@@ -157,6 +158,7 @@ class VoiceInputController(
                         service.finishComposing()
                     }
                     running = false
+                    service.updateVoiceInputActive(false)
                     service.updateVoiceInputStatus(VoiceInputUiState.Error(event.message))
                 }
 
@@ -180,6 +182,7 @@ class VoiceInputController(
                         }
                     }
                     running = false
+                    service.updateVoiceInputActive(false)
                     service.updateVoiceInputStatus(VoiceInputUiState.Idle)
                 }
             }
@@ -192,6 +195,7 @@ class VoiceInputController(
         finalized = true
         stopRecording()
         running = false
+        service.updateVoiceInputActive(false)
         engine.stop()
         service.lifecycleScope.launch {
             val t = lastShownText.ifBlank { stableText + currentPartial }
@@ -213,20 +217,17 @@ class VoiceInputController(
     fun cancel() {
         if (!running) return
         if (finalized) return
+        running = false
+        service.updateVoiceInputActive(false)
         finalized = true
-        val textToDelete = committedText
         stopRecording()
         engine.cancel()
+        stableText = ""
+        currentPartial = ""
+        commitOnStop = false
         service.lifecycleScope.launch {
-            if (textToDelete.isNotEmpty()) {
-                service.deleteSurroundingText(textToDelete.length)
-            }
-            stableText = ""
-            currentPartial = ""
-            commitOnStop = false
             service.finishComposing()
         }
-        running = false
         service.updateVoiceInputStatus(VoiceInputUiState.Idle)
         stopTimeoutDeferred?.cancel()
         stopTimeoutDeferred = null
