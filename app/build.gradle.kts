@@ -26,11 +26,6 @@ android {
                     "androidkeyboard",
                     "androidnotification"
                 )
-                // 指定 Gettext 工具路径
-                arguments(
-                    "-DGETTEXT_MSGMERGE_EXECUTABLE=D:/msys2/mingw64/bin/msgmerge.exe",
-                    "-DGETTEXT_MSGFMT_EXECUTABLE=D:/msys2/mingw64/bin/msgfmt.exe"
-                )
             }
         }
     }
