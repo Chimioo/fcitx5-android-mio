@@ -370,9 +370,8 @@
     <string name="clipboard_uncategorized">&#x672a;&#x5206;&#x7c7b;</string>
     <string name="clipboard_all_categories">&#x5168;&#x90e8;&#x5206;&#x7c7b;</string>
     <string name="clipboard_filter_category">&#x7b5b;&#x9009;&#x526a;&#x8d34;&#x677f;&#x5206;&#x7c7b;</string>
-    <string name="clipboard_edit_category_hint">&#x526a;&#x8d34;&#x677f;&#x5206;&#x7c7b;</string>
-    <string name="clipboard_set_category">&#x8bbe;&#x7f6e;&#x5206;&#x7c7b;</string>
-    <string name="clipboard_edit_category">&#x7f16;&#x8f91;&#x5206;&#x7c7b;</string>
+    <string name="clipboard_set_category">&#x5206;&#x7c7b;</string>
+    <string name="clipboard_add_category_hint">&#x5206;&#x7c7b;&#x540d;&#x5b57;</string>
     <string name="clipboard_add_category">&#x6dfb;&#x52a0;&#x5206;&#x7c7b;</string>
     <string name="clipboard_add_category_dialog_title">&#x65b0;&#x5efa;&#x5206;&#x7c7b;</string>
     <string name="network_dict_status_title">&#x7f51;&#x7edc;&#x8bcd;&#x5e93;&#x72b6;&#x6001;</string>

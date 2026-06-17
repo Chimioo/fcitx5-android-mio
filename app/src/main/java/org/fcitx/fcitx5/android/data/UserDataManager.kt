@@ -10,6 +10,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
 import org.fcitx.fcitx5.android.BuildConfig
 import org.fcitx.fcitx5.android.R
+import org.fcitx.fcitx5.android.data.clipboard.CompatDbExporter
 import org.fcitx.fcitx5.android.utils.Const
 import org.fcitx.fcitx5.android.utils.appContext
 import org.fcitx.fcitx5.android.utils.errorRuntime
@@ -37,10 +38,19 @@ object UserDataManager {
     )
 
     private fun writeFileTree(srcDir: File, destPrefix: String, dest: ZipOutputStream) {
+        writeFileTreeFiltered(srcDir, destPrefix, dest, ::allowAll)
+    }
+
+    private fun writeFileTreeFiltered(
+        srcDir: File,
+        destPrefix: String,
+        dest: ZipOutputStream,
+        fileFilter: (File) -> Boolean
+    ) {
         dest.putNextEntry(ZipEntry("$destPrefix/"))
         srcDir.walkTopDown().forEach { f ->
             val related = f.relativeTo(srcDir)
-            if (related.path != "") {
+            if (related.path != "" && fileFilter(f)) {
                 if (f.isDirectory) {
                     dest.putNextEntry(ZipEntry("$destPrefix/${related.path}/"))
                 } else if (f.isFile) {
@@ -51,18 +61,48 @@ object UserDataManager {
         }
     }
 
+    private fun allowAll(f: File) = true
+
+    private fun writeFile(zipEntry: String, source: File, dest: ZipOutputStream) {
+        dest.putNextEntry(ZipEntry(zipEntry))
+        source.inputStream().use { it.copyTo(dest) }
+        dest.closeEntry()
+    }
+
     private val sharedPrefsDir = File(appContext.applicationInfo.dataDir, "shared_prefs")
     private val dataBasesDir = File(appContext.applicationInfo.dataDir, "databases")
     private val externalDir = appContext.getExternalFilesDir(null)!!
     private val recentlyUsedDir = appContext.filesDir.resolve(RecentlyUsed.DIR_NAME)
+    private val clipboardDb = File(dataBasesDir, "clbdb")
+    private val clipboardDbTemp = File(appContext.cacheDir, "clbdb_export_temp")
+    private const val CLIPBOARD_DB_ENTRY = "databases/clbdb"
 
     @OptIn(ExperimentalSerializationApi::class)
-    fun export(dest: OutputStream, timestamp: Long = System.currentTimeMillis()) = runCatching {
+    fun export(
+        dest: OutputStream,
+        timestamp: Long = System.currentTimeMillis(),
+        v5Compat: Boolean = false
+    ) = runCatching {
         ZipOutputStream(dest.buffered()).use { zipStream ->
             // shared_prefs
             writeFileTree(sharedPrefsDir, "shared_prefs", zipStream)
-            // databases
-            writeFileTree(dataBasesDir, "databases", zipStream)
+            // databases: every db file under databases/ goes in, but `clbdb`
+            // is replaced by a v5-schema copy when v5Compat is requested so
+            // the resulting zip is directly importable by the upstream v5
+            // build. clipboard_category rows are intentionally dropped in
+            // that case.
+            writeFileTreeFiltered(dataBasesDir, "databases", zipStream) { f ->
+                f.name != clipboardDb.name
+            }
+            if (clipboardDb.exists()) {
+                if (v5Compat) {
+                    CompatDbExporter.buildV5Compat(clipboardDb, clipboardDbTemp)
+                    writeFile(CLIPBOARD_DB_ENTRY, clipboardDbTemp, zipStream)
+                    clipboardDbTemp.delete()
+                } else {
+                    writeFile(CLIPBOARD_DB_ENTRY, clipboardDb, zipStream)
+                }
+            }
             // external
             writeFileTree(externalDir, "external", zipStream)
             // recently_used moved to SharedPreference and shoud not be exported

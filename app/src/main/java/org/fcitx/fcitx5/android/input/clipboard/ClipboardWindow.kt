@@ -7,12 +7,9 @@ package org.fcitx.fcitx5.android.input.clipboard
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
-import android.text.InputType
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import android.widget.PopupMenu
 import androidx.annotation.Keep
 import androidx.core.text.bold
@@ -50,9 +47,7 @@ import org.fcitx.fcitx5.android.input.wm.InputWindow
 import org.fcitx.fcitx5.android.input.wm.InputWindowManager
 import org.fcitx.fcitx5.android.utils.AppUtil
 import org.fcitx.fcitx5.android.utils.EventStateMachine
-import org.fcitx.fcitx5.android.utils.forceShowSelf
 import org.fcitx.fcitx5.android.utils.item
-import org.fcitx.fcitx5.android.utils.str
 import org.mechdancer.dependency.manager.must
 import splitties.dimensions.dp
 import splitties.views.dsl.core.withTheme
@@ -263,51 +258,11 @@ private var categoryDialog: AlertDialog? = null
                         }
                     }
                 }
-                menu.item(R.string.clipboard_edit_category, R.drawable.ic_baseline_edit_24) {
-                    showCategoryDialog(entry)
-                }
                 setOnDismissListener {
                     if (it === promptMenu) promptMenu = null
                 }
                 show()
             }
-        }
-    }
-
-    private fun showCategoryDialog(entry: ClipboardEntry) {
-        categoryDialog?.dismiss()
-        val editText = EditText(context).apply {
-            hint = context.getString(R.string.clipboard_edit_category_hint)
-            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
-            isSingleLine = true
-            setText(entry.category)
-            selectAll()
-        }
-        val content = LinearLayout(context).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(context.dp(20), 0, context.dp(20), 0)
-            addView(editText)
-        }
-        val dialog = AlertDialog.Builder(context)
-            .setTitle(R.string.clipboard_edit_category)
-            .setView(content)
-            .setPositiveButton(android.R.string.ok) { _, _ ->
-                service.lifecycleScope.launch {
-                    ClipboardManager.updateCategory(entry.id, editText.str)
-                    adapter.refresh()
-                    refreshCategories()
-                }
-            }
-            .setNegativeButton(android.R.string.cancel, null)
-            .create()
-        service.showDialog(dialog, requireIme = true)
-        categoryDialog = dialog
-        dialog.setOnDismissListener {
-            if (dialog === categoryDialog) categoryDialog = null
-        }
-        editText.post {
-            editText.requestFocus()
-            service.forceShowSelf()
         }
     }
 

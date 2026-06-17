@@ -40,6 +40,8 @@ class AdvancedSettingsFragment : ManagedPreferenceFragment(AppPrefs.getInstance(
 
     private var exportTimestamp = System.currentTimeMillis()
 
+    private var exportV5Compat = false
+
     private lateinit var exportLauncher: ActivityResultLauncher<String>
 
     private lateinit var importLauncher: ActivityResultLauncher<String>
@@ -87,7 +89,9 @@ class AdvancedSettingsFragment : ManagedPreferenceFragment(AppPrefs.getInstance(
                     try {
                         withContext(Dispatchers.IO) {
                             val outputStream = ctx.contentResolver.openOutputStream(uri)!!
-                            UserDataManager.export(outputStream, exportTimestamp).getOrThrow()
+                            UserDataManager.export(
+                                outputStream, exportTimestamp, v5Compat = exportV5Compat
+                            ).getOrThrow()
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -117,13 +121,27 @@ class AdvancedSettingsFragment : ManagedPreferenceFragment(AppPrefs.getInstance(
             }) else null
         )
         screen.addPreference(R.string.export_user_data) {
-            lifecycleScope.withLoadingDialog(ctx) {
-                viewModel.fcitx.runOnReady {
-                    save()
-                }
-                exportTimestamp = System.currentTimeMillis()
-                exportLauncher.launch("fcitx5-android_${iso8601UTCDateTime(exportTimestamp)}.zip")
+            val v5CompatView = android.widget.CheckBox(ctx).apply {
+                text = getString(R.string.export_v5_compat_dialog_title)
+                isChecked = false
             }
+            MaterialAlertDialogBuilder(ctx)
+                .setIconAttribute(android.R.attr.alertDialogIcon)
+                .setTitle(R.string.export_user_data)
+                .setMessage(R.string.export_v5_compat_dialog_message)
+                .setView(v5CompatView)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    exportV5Compat = v5CompatView.isChecked
+                    lifecycleScope.withLoadingDialog(ctx) {
+                        viewModel.fcitx.runOnReady {
+                            save()
+                        }
+                        exportTimestamp = System.currentTimeMillis()
+                        exportLauncher.launch("fcitx5-android_${iso8601UTCDateTime(exportTimestamp)}.zip")
+                    }
+                }
+                .setNegativeButton(android.R.string.cancel, null)
+                .show()
         }
         screen.addPreference(R.string.import_user_data) {
             MaterialAlertDialogBuilder(ctx)

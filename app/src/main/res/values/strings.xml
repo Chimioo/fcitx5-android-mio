@@ -182,10 +182,9 @@
     <string name="clipboard_uncategorized">Uncategorized</string>
     <string name="clipboard_all_categories">All categories</string>
 <string name="clipboard_filter_category">Filter clipboard category</string>
-    <string name="clipboard_edit_category_hint">Clipboard category</string>
-    <string name="clipboard_set_category">Set category</string>
-    <string name="clipboard_edit_category">Edit category</string>
+    <string name="clipboard_set_category">分类</string>
     <string name="clipboard_add_category">Add category</string>
+    <string name="clipboard_add_category_hint">分类名字</string>
     <string name="clipboard_add_category_dialog_title">New category</string>
     <string name="clipboard_delete_category">Delete category</string>
     <string name="clipboard_delete_category_confirm">Delete category \"%1$s\"? Entries in this category will become Uncategorized.</string>
@@ -302,6 +301,8 @@
     <string name="reset_keyboard_on_focus_change">Switch back to keyboard when the focus changes</string>
     <string name="export_user_data">Export user data</string>
     <string name="import_user_data">Import user data</string>
+    <string name="export_v5_compat_dialog_title">兼容官方版（v5 schema）</string>
+    <string name="export_v5_compat_dialog_message">勾选后，导出的剪贴板数据库将以官方版 v5 schema 重建（丢弃剪贴板分类表）。\n\n此备份仅供降级到官方版 fcitx5-android 后使用，不能用于本 fork 恢复数据。\n\n如需在本 fork 间备份数据，请勿勾选。</string>
     <string name="exception_user_data_filename">The filename extension of %1$s does not indicate fcitx5-android user data</string>
     <string name="exception_user_data_metadata">Unable to find metadata of user data</string>
     <string name="exception_user_data_package_name_mismatch">User data does not match current application</string>
