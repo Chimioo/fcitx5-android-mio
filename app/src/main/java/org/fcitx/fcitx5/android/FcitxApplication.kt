@@ -17,10 +17,15 @@ import androidx.core.content.edit
 import androidx.preference.PreferenceManager
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import org.fcitx.fcitx5.android.core.reloadPinyinDict
 import org.fcitx.fcitx5.android.daemon.FcitxDaemon
 import org.fcitx.fcitx5.android.data.clipboard.ClipboardManager
+import org.fcitx.fcitx5.android.data.pinyin.NetworkPinyinDictionaryUpdateScheduler
+import org.fcitx.fcitx5.android.data.pinyin.PinyinDictManager
 import org.fcitx.fcitx5.android.data.prefs.AppPrefs
 import org.fcitx.fcitx5.android.data.theme.ThemeManager
 import org.fcitx.fcitx5.android.ui.main.LogActivity
@@ -151,6 +156,23 @@ class FcitxApplication : Application() {
             null,
             ContextCompat.RECEIVER_EXPORTED
         )
+        if (!isDirectBootMode) {
+            NetworkPinyinDictionaryUpdateScheduler.updateSchedule(this)
+            coroutineScope.launch(Dispatchers.IO) {
+                val updated = PinyinDictManager.syncDueNetworkDictionaries(
+                    includeWifiOnlyDictionaries = PinyinDictManager.canUpdateWifiOnlyDictionaries(
+                        this@FcitxApplication
+                    )
+                )
+                    .getOrElse {
+                        Timber.w(it, "Failed to update network pinyin dictionaries")
+                        emptyList()
+                    }
+                if (updated.isNotEmpty()) {
+                    FcitxDaemon.getFirstConnectionOrNull()?.runIfReady { reloadPinyinDict() }
+                }
+            }
+        }
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

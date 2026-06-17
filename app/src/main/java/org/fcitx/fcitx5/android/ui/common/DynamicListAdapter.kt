@@ -51,9 +51,13 @@ abstract class DynamicListAdapter<T>(
 
     var removable: (T) -> Boolean = { true }
 
+    var onItemLongPress: ((View, T) -> Unit)? = null
+
     private var onBackPressedCallback: OnBackPressedCallback? = null
 
     abstract fun showEntry(x: T): String
+
+    open fun showEntryDetail(x: T): String? = null
 
     private var mainViewModel: MainViewModel? = null
 
@@ -66,6 +70,7 @@ abstract class DynamicListAdapter<T>(
         val handleImage = entryUi.handleImage
         val checkBox = entryUi.checkBox
         val nameText = entryUi.nameText
+        val detailText = entryUi.detailText
         val editButton = entryUi.editButton
         val settingsButton = entryUi.settingsButton
     }
@@ -85,6 +90,13 @@ abstract class DynamicListAdapter<T>(
                 else false
             }
             nameText.text = showEntry(item)
+            val detail = showEntryDetail(item)
+            if (detail.isNullOrBlank()) {
+                detailText.visibility = View.GONE
+            } else {
+                detailText.text = detail
+                detailText.visibility = View.VISIBLE
+            }
 
             if (multiselect) {
                 handleImage.visibility = View.GONE
@@ -109,9 +121,15 @@ abstract class DynamicListAdapter<T>(
                 multiselectCheckBox.setOnCheckedChangeListener { _, isChecked ->
                     select(item, isChecked)
                 }
+                val longPressHandler = onItemLongPress
                 nameText.setOnLongClickListener {
-                    itemTouchHelper?.startDrag(holder)
-                    true
+                    if (longPressHandler != null) {
+                        longPressHandler(nameText, item)
+                        true
+                    } else {
+                        itemTouchHelper?.startDrag(holder)
+                        true
+                    }
                 }
                 nameText.setOnClickListener {
                     multiselectCheckBox.toggle()
@@ -134,6 +152,8 @@ abstract class DynamicListAdapter<T>(
             checkBox.isEnabled = true
             checkBox.isChecked = false
             nameText.setOnClickListener(null)
+            detailText.text = null
+            detailText.visibility = View.GONE
             settingsButton.setOnClickListener(null)
             editButton.setOnClickListener(null)
         }

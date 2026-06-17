@@ -123,6 +123,17 @@
             android:theme="@style/Theme.DialogTheme"
             android:windowSoftInputMode="stateAlwaysVisible|adjustPan" />
 
+        <activity
+            android:name=".ui.main.ClipboardAddCategoryActivity"
+            android:autoRemoveFromRecents="true"
+            android:directBootAware="true"
+            android:excludeFromRecents="true"
+            android:label="@string/clipboard_add_category"
+            android:launchMode="singleInstance"
+            android:taskAffinity=".ui.main.ClipboardAddCategoryActivity"
+            android:theme="@style/Theme.DialogTheme"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustPan" />
+
         <service
             android:name=".input.FcitxInputMethodService"
             android:directBootAware="true"

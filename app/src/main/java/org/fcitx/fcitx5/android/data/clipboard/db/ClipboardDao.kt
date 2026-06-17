@@ -7,6 +7,7 @@ package org.fcitx.fcitx5.android.data.clipboard.db
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 
 @Dao
@@ -19,6 +20,12 @@ interface ClipboardDao {
 
     @Query("UPDATE ${ClipboardEntry.TABLE_NAME} SET text=:text WHERE id=:id")
     suspend fun updateText(id: Int, text: String)
+
+    @Query("UPDATE ${ClipboardEntry.TABLE_NAME} SET category=:category WHERE id=:id")
+    suspend fun updateCategory(id: Int, category: String)
+
+    @Query("UPDATE ${ClipboardEntry.TABLE_NAME} SET category='' WHERE category=:category")
+    suspend fun clearCategory(category: String)
 
     @Query("UPDATE ${ClipboardEntry.TABLE_NAME} SET timestamp=:timestamp WHERE id=:id")
     suspend fun updateTime(id: Int, timestamp: Long)
@@ -38,8 +45,20 @@ interface ClipboardDao {
     @Query("SELECT * FROM ${ClipboardEntry.TABLE_NAME} WHERE pinned=0 AND deleted=0")
     suspend fun getAllUnpinned(): List<ClipboardEntry>
 
-    @Query("SELECT * FROM ${ClipboardEntry.TABLE_NAME} WHERE deleted=0 ORDER BY pinned DESC, timestamp DESC")
+@Query("SELECT * FROM ${ClipboardEntry.TABLE_NAME} WHERE deleted=0 ORDER BY pinned DESC, timestamp DESC")
     fun allEntries(): PagingSource<Int, ClipboardEntry>
+
+    @Query("SELECT * FROM ${ClipboardEntry.TABLE_NAME} WHERE deleted=0 ORDER BY pinned DESC, timestamp DESC LIMIT 1")
+    suspend fun latestEntry(): ClipboardEntry?
+
+    @Query("SELECT * FROM ${ClipboardEntry.TABLE_NAME} WHERE deleted=0 AND category=:category ORDER BY pinned DESC, timestamp DESC")
+    fun entriesByCategory(category: String): PagingSource<Int, ClipboardEntry>
+
+    @Query("SELECT DISTINCT category FROM ${ClipboardEntry.TABLE_NAME} WHERE deleted=0 AND category<>'' ORDER BY category COLLATE NOCASE ASC")
+    suspend fun categoriesFromEntries(): List<String>
+
+    @Query("SELECT name FROM ${ClipboardCategory.TABLE_NAME} ORDER BY name COLLATE NOCASE ASC")
+    suspend fun categoriesFromTable(): List<String>
 
     @Query("SELECT * FROM ${ClipboardEntry.TABLE_NAME} WHERE text=:text AND sensitive=:sensitive AND deleted=0 LIMIT 1")
     suspend fun find(text: String, sensitive: Boolean = false): ClipboardEntry?
@@ -61,4 +80,10 @@ interface ClipboardDao {
 
     @Query("DELETE FROM ${ClipboardEntry.TABLE_NAME} WHERE deleted=1")
     suspend fun realDelete()
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertCategory(category: ClipboardCategory): Long
+
+    @Query("DELETE FROM ${ClipboardCategory.TABLE_NAME} WHERE name=:name")
+    suspend fun deleteCategoryByName(name: String)
 }

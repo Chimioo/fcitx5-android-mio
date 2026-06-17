@@ -22,6 +22,7 @@ import org.fcitx.fcitx5.android.data.theme.Theme
 import org.fcitx.fcitx5.android.data.theme.ThemeManager
 import org.fcitx.fcitx5.android.data.theme.ThemePrefs.NavbarBackground
 import org.fcitx.fcitx5.android.input.keyboard.TextKeyboard
+import org.fcitx.fcitx5.android.utils.alphaPercent
 import org.fcitx.fcitx5.android.utils.navbarFrameHeight
 import splitties.dimensions.dp
 import splitties.views.backgroundColor
@@ -75,6 +76,7 @@ class KeyboardPreviewUi(override val ctx: Context, val theme: Theme) : Ui {
 
     private val navbarBackground = ThemeManager.prefs.navbarBackground
     private val keyBorder by ThemeManager.prefs.keyBorder
+    private val keyboardOpacity by ThemeManager.prefs.keyboardOpacity
 
     private val navbarBkgChangeListener = ManagedPreference.OnChangeListener<Any> { _, _ ->
         recalculateSize()
@@ -92,7 +94,7 @@ class KeyboardPreviewUi(override val ctx: Context, val theme: Theme) : Ui {
     private lateinit var fakeKeyboardWindow: TextKeyboard
 
     private val fakeInputView = constraintLayout {
-        add(bkg, lParams {
+        add(bkg, lParams(matchConstraints, matchConstraints) {
             centerInParent()
         })
         add(fakeKawaiiBar, lParams(height = dp(40)) {
@@ -177,6 +179,7 @@ class KeyboardPreviewUi(override val ctx: Context, val theme: Theme) : Ui {
 
     fun setBackground(drawable: Drawable) {
         bkg.imageDrawable = drawable
+        bkg.imageAlpha = (100 - keyboardOpacity.coerceIn(0, 100)) * 255 / 100
     }
 
     fun setTheme(theme: Theme, background: Drawable? = null) {
@@ -184,7 +187,9 @@ class KeyboardPreviewUi(override val ctx: Context, val theme: Theme) : Ui {
         if (this::fakeKeyboardWindow.isInitialized) {
             fakeInputView.removeView(fakeKeyboardWindow)
         }
-        fakeKawaiiBar.backgroundColor = if (keyBorder) Color.TRANSPARENT else theme.barColor
+        fakeKawaiiBar.backgroundColor =
+            if (keyBorder) Color.TRANSPARENT
+            else theme.barColor.alphaPercent(100 - keyboardOpacity.coerceIn(0, 100))
         fakeKeyboardWindow = TextKeyboard(ctx, theme).also {
             it.onAttach()
         }

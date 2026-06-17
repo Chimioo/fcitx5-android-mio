@@ -126,6 +126,7 @@ class VoiceInputController(
                         fullText
                     }
                     service.lifecycleScope.launch {
+                        if (!running) return@launch
                         service.updateComposingFromExternal(partialText)
                     }
                 }
@@ -155,7 +156,7 @@ class VoiceInputController(
                     Timber.w("Voice input error: ${event.message}")
                     stopRecording()
                     service.lifecycleScope.launch {
-                        service.finishComposing()
+                        service.updateComposingFromExternal("")
                     }
                     running = false
                     service.updateVoiceInputActive(false)
@@ -178,7 +179,7 @@ class VoiceInputController(
                             currentPartial = ""
                             commitOnStop = false
                             finalized = true
-                            service.finishComposing()
+                            service.updateComposingFromExternal("")
                         }
                     }
                     running = false
@@ -207,7 +208,7 @@ class VoiceInputController(
             stableText = ""
             currentPartial = ""
             commitOnStop = false
-            service.finishComposing()
+            service.updateComposingFromExternal("")
         }
         service.updateVoiceInputStatus(VoiceInputUiState.Idle)
         stopTimeoutDeferred?.cancel()
@@ -220,13 +221,13 @@ class VoiceInputController(
         running = false
         service.updateVoiceInputActive(false)
         finalized = true
+        commitOnStop = false
         stopRecording()
         engine.cancel()
         stableText = ""
         currentPartial = ""
-        commitOnStop = false
         service.lifecycleScope.launch {
-            service.finishComposing()
+            service.updateComposingFromExternal("")
         }
         service.updateVoiceInputStatus(VoiceInputUiState.Idle)
         stopTimeoutDeferred?.cancel()

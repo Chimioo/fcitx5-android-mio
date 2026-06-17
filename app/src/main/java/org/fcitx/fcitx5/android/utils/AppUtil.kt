@@ -12,6 +12,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import org.fcitx.fcitx5.android.R
+import org.fcitx.fcitx5.android.ui.main.ClipboardAddCategoryActivity
 import org.fcitx.fcitx5.android.ui.main.ClipboardEditActivity
 import org.fcitx.fcitx5.android.ui.main.MainActivity
 import org.fcitx.fcitx5.android.ui.main.settings.SettingsRoute
@@ -50,6 +51,12 @@ object AppUtil {
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             putExtra(ClipboardEditActivity.ENTRY_ID, id)
             putExtra(ClipboardEditActivity.LAST_ENTRY, lastEntry)
+        }
+    }
+
+    fun launchClipboardAddCategory(context: Context) {
+        context.startActivity<ClipboardAddCategoryActivity> {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
     }
 

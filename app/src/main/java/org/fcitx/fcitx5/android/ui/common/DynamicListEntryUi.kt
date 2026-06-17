@@ -5,21 +5,17 @@
 package org.fcitx.fcitx5.android.ui.common
 
 import android.content.Context
-import android.widget.ImageView
 import android.view.View
 import android.view.ViewGroup
-import com.google.android.material.behavior.HideViewOnScrollBehavior
+import android.widget.ImageView
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.color.MaterialColors
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import org.fcitx.fcitx5.android.R
 import splitties.dimensions.dp
 import splitties.resources.drawable
 import splitties.resources.resolveThemeAttribute
-import splitties.resources.resolveThemeAttribute
 import splitties.resources.styledDimenPxSize
 import splitties.resources.styledDrawable
-import splitties.views.backgroundColor
 import splitties.views.dsl.constraintlayout.after
 import splitties.views.dsl.constraintlayout.before
 import splitties.views.dsl.constraintlayout.bottomOfParent
@@ -32,11 +28,11 @@ import splitties.views.dsl.constraintlayout.startOfParent
 import splitties.views.dsl.constraintlayout.topOfParent
 import splitties.views.dsl.core.Ui
 import splitties.views.dsl.core.add
-import splitties.views.dsl.core.checkBox
 import splitties.views.dsl.core.imageButton
 import splitties.views.dsl.core.imageView
 import splitties.views.dsl.core.matchParent
 import splitties.views.dsl.core.textView
+import splitties.views.dsl.core.verticalLayout
 import splitties.views.dsl.core.view
 import splitties.views.dsl.core.wrapContent
 import splitties.views.imageDrawable
@@ -57,8 +53,19 @@ class DynamicListEntryUi(override val ctx: Context) : Ui {
     val checkBox = view(::MaterialCheckBox)
 
     val nameText = textView {
-        setPaddingDp(0, 16, 0, 16)
         textAppearance = ctx.resolveThemeAttribute(android.R.attr.textAppearanceListItem)
+    }
+
+    val detailText = textView {
+        visibility = View.GONE
+        textAppearance = ctx.resolveThemeAttribute(android.R.attr.textAppearanceSmall)
+        setTextColor(MaterialColors.getColor(ctx, com.google.android.material.R.attr.colorOnSurfaceVariant, 0))
+    }
+
+    private val textColumn = verticalLayout {
+        setPaddingDp(0, 10, 0, 10)
+        add(nameText, ViewGroup.LayoutParams(matchParent, wrapContent))
+        add(detailText, ViewGroup.LayoutParams(matchParent, wrapContent))
     }
 
     val editButton = imageButton {
@@ -104,7 +111,7 @@ class DynamicListEntryUi(override val ctx: Context) : Ui {
             after(multiselectCheckBox, paddingStart)
         })
 
-        add(nameText, lParams {
+        add(textColumn, lParams {
             width = matchConstraints
             height = wrapContent
             centerVertically()

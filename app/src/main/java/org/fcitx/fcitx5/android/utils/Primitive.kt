@@ -5,7 +5,13 @@
 
 package org.fcitx.fcitx5.android.utils
 
+import android.graphics.Color
 import androidx.core.graphics.ColorUtils
 import kotlin.math.roundToInt
 
 fun Int.alpha(a: Float) = ColorUtils.setAlphaComponent(this, (a * 0xff).roundToInt())
+
+fun Int.alphaPercent(percent: Int): Int {
+    val factor = percent.coerceIn(0, 100) / 100f
+    return ColorUtils.setAlphaComponent(this, (Color.alpha(this) * factor).roundToInt())
+}

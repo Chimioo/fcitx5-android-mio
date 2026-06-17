@@ -5,10 +5,14 @@
 package org.fcitx.fcitx5.android.input.clipboard
 
 import android.annotation.SuppressLint
+import android.app.AlertDialog
 import android.content.Intent
+import android.text.InputType
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import android.widget.PopupMenu
 import androidx.annotation.Keep
 import androidx.core.text.bold
@@ -46,7 +50,9 @@ import org.fcitx.fcitx5.android.input.wm.InputWindow
 import org.fcitx.fcitx5.android.input.wm.InputWindowManager
 import org.fcitx.fcitx5.android.utils.AppUtil
 import org.fcitx.fcitx5.android.utils.EventStateMachine
+import org.fcitx.fcitx5.android.utils.forceShowSelf
 import org.fcitx.fcitx5.android.utils.item
+import org.fcitx.fcitx5.android.utils.str
 import org.mechdancer.dependency.manager.must
 import splitties.dimensions.dp
 import splitties.views.dsl.core.withTheme
@@ -79,9 +85,7 @@ class ClipboardWindow : InputWindow.ExtendedInputWindow<ClipboardWindow>() {
 
     private val clipboardEntryRadius by ThemeManager.prefs.clipboardEntryRadius
 
-    private val clipboardEntriesPager by lazy {
-        Pager(PagingConfig(pageSize = 16)) { ClipboardManager.allEntries() }
-    }
+    private var selectedCategory: String? = null
     private var adapterSubmitJob: Job? = null
 
     private val adapter: ClipboardAdapter by lazy {
@@ -100,6 +104,10 @@ class ClipboardWindow : InputWindow.ExtendedInputWindow<ClipboardWindow>() {
 
             override fun onEdit(id: Int) {
                 AppUtil.launchClipboardEdit(context, id)
+            }
+
+            override fun onCategory(entry: ClipboardEntry, anchor: View) {
+                showCategoryMenu(entry, anchor)
             }
 
             override fun onShare(entry: ClipboardEntry) {
@@ -165,12 +173,143 @@ class ClipboardWindow : InputWindow.ExtendedInputWindow<ClipboardWindow>() {
                     promptDeleteAll(ClipboardManager.haveUnpinned())
                 }
             }
+            addCategoryButton.setOnClickListener {
+                showAddCategoryDialog()
+            }
         }
     }
 
     override fun onCreateView(): View = ui.root
 
     private var promptMenu: PopupMenu? = null
+private var categoryDialog: AlertDialog? = null
+
+    private fun reloadEntries() {
+        adapterSubmitJob?.cancel()
+        adapterSubmitJob = service.lifecycleScope.launch {
+            Pager(PagingConfig(pageSize = 16)) {
+                ClipboardManager.allEntries(selectedCategory)
+            }.flow.collect {
+                adapter.submitData(it)
+            }
+        }
+    }
+
+    private fun refreshCategories() {
+        service.lifecycleScope.launch {
+            val categories = ClipboardManager.categories()
+            ui.setCategories(
+                categories,
+                selectedCategory,
+                onSelect = { newSelection ->
+                    if (selectedCategory != newSelection) {
+                        selectedCategory = newSelection
+                        refreshCategories()
+                        reloadEntries()
+                    }
+                },
+                onLongPressCategory = { category -> showDeleteCategoryDialog(category) }
+            )
+        }
+    }
+
+    private fun showDeleteCategoryDialog(category: String) {
+        // Confirmation dialog — no EditText, no IME conflict, default path is fine.
+        val dialog = AlertDialog.Builder(context)
+            .setTitle(R.string.clipboard_delete_category)
+            .setMessage(context.getString(R.string.clipboard_delete_category_confirm, category))
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                service.lifecycleScope.launch {
+                    if (selectedCategory == category) {
+                        selectedCategory = null
+                    }
+                    ClipboardManager.clearCategory(category)
+                    adapter.refresh()
+                    refreshCategories()
+                    reloadEntries()
+                }
+            }
+            .create()
+        service.showDialog(dialog)
+        categoryDialog = dialog
+        dialog.setOnDismissListener {
+            if (dialog === categoryDialog) categoryDialog = null
+        }
+    }
+
+    private fun showAddCategoryDialog() {
+        AppUtil.launchClipboardAddCategory(context)
+    }
+
+    private fun showCategoryMenu(entry: ClipboardEntry, anchor: View) {
+        service.lifecycleScope.launch {
+            val categories = ClipboardManager.categories()
+            promptMenu?.dismiss()
+            promptMenu = PopupMenu(context, anchor).apply {
+                menu.item(R.string.clipboard_uncategorized) {
+                    service.lifecycleScope.launch {
+                        ClipboardManager.updateCategory(entry.id, "")
+                        adapter.refresh()
+                        refreshCategories()
+                    }
+                }
+                categories.filter { it != entry.category }.forEach { category ->
+                    menu.item(category) {
+                        service.lifecycleScope.launch {
+                            ClipboardManager.updateCategory(entry.id, category)
+                            adapter.refresh()
+                            refreshCategories()
+                        }
+                    }
+                }
+                menu.item(R.string.clipboard_edit_category, R.drawable.ic_baseline_edit_24) {
+                    showCategoryDialog(entry)
+                }
+                setOnDismissListener {
+                    if (it === promptMenu) promptMenu = null
+                }
+                show()
+            }
+        }
+    }
+
+    private fun showCategoryDialog(entry: ClipboardEntry) {
+        categoryDialog?.dismiss()
+        val editText = EditText(context).apply {
+            hint = context.getString(R.string.clipboard_edit_category_hint)
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_SENTENCES
+            isSingleLine = true
+            setText(entry.category)
+            selectAll()
+        }
+        val content = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(context.dp(20), 0, context.dp(20), 0)
+            addView(editText)
+        }
+        val dialog = AlertDialog.Builder(context)
+            .setTitle(R.string.clipboard_edit_category)
+            .setView(content)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                service.lifecycleScope.launch {
+                    ClipboardManager.updateCategory(entry.id, editText.str)
+                    adapter.refresh()
+                    refreshCategories()
+                }
+            }
+            .setNegativeButton(android.R.string.cancel, null)
+            .create()
+        service.showDialog(dialog, requireIme = true)
+        categoryDialog = dialog
+        dialog.setOnDismissListener {
+            if (dialog === categoryDialog) categoryDialog = null
+        }
+        editText.post {
+            editText.requestFocus()
+            service.forceShowSelf()
+        }
+    }
 
     private fun promptDeleteAll(skipPinned: Boolean) {
         promptMenu?.dismiss()
@@ -263,11 +402,8 @@ class ClipboardWindow : InputWindow.ExtendedInputWindow<ClipboardWindow>() {
             val empty = it.append.endOfPaginationReached && adapter.itemCount < 1
             stateMachine.push(ClipboardDbUpdated, ClipboardDbEmpty to empty)
         }
-        adapterSubmitJob = service.lifecycleScope.launch {
-            clipboardEntriesPager.flow.collect {
-                adapter.submitData(it)
-            }
-        }
+        reloadEntries()
+        refreshCategories()
         clipboardEnabledPref.registerOnChangeListener(clipboardEnabledListener)
     }
 
@@ -276,6 +412,7 @@ class ClipboardWindow : InputWindow.ExtendedInputWindow<ClipboardWindow>() {
         adapter.onDetached()
         adapterSubmitJob?.cancel()
         promptMenu?.dismiss()
+        categoryDialog?.dismiss()
         snackbarInstance?.dismiss()
     }
 

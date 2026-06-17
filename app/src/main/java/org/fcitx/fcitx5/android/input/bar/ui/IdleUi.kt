@@ -241,18 +241,25 @@ class IdleUi(
             hideKeyboardButton.visibility = View.GONE
             animator.visibility = View.GONE
             numberRow.visibility = View.VISIBLE
+            numberRow.keyActionListener = commonKeyActionListener.listener
+            numberRow.popupActionListener = popup.listener
         } else if (state == State.VoiceInput) {
             menuButton.visibility = View.VISIBLE
             hideKeyboardButton.visibility = View.VISIBLE
             animator.visibility = View.VISIBLE
             numberRow.visibility = View.GONE
             idleBody.visibility = View.VISIBLE
-        } else if (currentState == State.NumberRow) {
-            if (fromUser && !disableAnimation) {
+        } else {
+            if (currentState == State.NumberRow && fromUser && !disableAnimation) {
                 enableSlideTransition(idleBody, numberRow, Gravity.START, Gravity.END)
             }
+            menuButton.visibility = View.VISIBLE
+            hideKeyboardButton.visibility = View.VISIBLE
+            animator.visibility = View.VISIBLE
             idleBody.visibility = View.VISIBLE
             numberRow.visibility = View.GONE
+        }
+        if (state != State.NumberRow) {
             numberRow.keyActionListener = null
             numberRow.popupActionListener = null
             popup.dismissAll()

@@ -12,9 +12,11 @@ import android.graphics.drawable.RippleDrawable
 import android.graphics.drawable.StateListDrawable
 import androidx.annotation.DrawableRes
 import org.fcitx.fcitx5.android.data.theme.Theme
+import org.fcitx.fcitx5.android.data.theme.ThemeManager
 import org.fcitx.fcitx5.android.input.keyboard.CustomGestureView
 import org.fcitx.fcitx5.android.input.keyboard.shadowedKeyBackgroundDrawable
 import org.fcitx.fcitx5.android.input.keyboard.insetRadiusDrawable
+import org.fcitx.fcitx5.android.utils.alphaPercent
 import org.fcitx.fcitx5.android.utils.borderDrawable
 import org.fcitx.fcitx5.android.utils.pressHighlightDrawable
 import org.fcitx.fcitx5.android.utils.rippleDrawable
@@ -45,12 +47,15 @@ class TextEditingButton(
 
     // !bordered
     private val lineWidth = max(1, dp(1) / 2)
+    private val buttonOpacity = 100 - ThemeManager.prefs.buttonOpacity.getValue().coerceIn(0, 100)
 
     init {
         if (bordered) {
-            val bkgColor = if (altStyle) theme.altKeyBackgroundColor else theme.keyBackgroundColor
+            val bkgColor =
+                (if (altStyle) theme.altKeyBackgroundColor else theme.keyBackgroundColor)
+                    .alphaPercent(buttonOpacity)
             background = shadowedKeyBackgroundDrawable(
-                bkgColor, theme.keyShadowColor,
+                bkgColor, theme.keyShadowColor.alphaPercent(buttonOpacity),
                 radius, shadowWidth, hInset, vInset
             )
             foreground = if (rippled) {
@@ -127,14 +132,16 @@ class TextEditingButton(
                 addState(
                     intArrayOf(android.R.attr.state_activated),
                     shadowedKeyBackgroundDrawable(
-                        theme.genericActiveBackgroundColor, theme.keyShadowColor,
+                        theme.genericActiveBackgroundColor.alphaPercent(buttonOpacity),
+                        theme.keyShadowColor.alphaPercent(buttonOpacity),
                         radius, shadowWidth, hInset, vInset
                     )
                 )
                 addState(
                     intArrayOf(android.R.attr.state_enabled),
                     shadowedKeyBackgroundDrawable(
-                        theme.keyBackgroundColor, theme.keyShadowColor,
+                        theme.keyBackgroundColor.alphaPercent(buttonOpacity),
+                        theme.keyShadowColor.alphaPercent(buttonOpacity),
                         radius, shadowWidth, hInset, vInset
                     )
                 )
@@ -146,7 +153,7 @@ class TextEditingButton(
                     borderDrawable(
                         lineWidth,
                         theme.dividerColor,
-                        theme.genericActiveBackgroundColor
+                        theme.genericActiveBackgroundColor.alphaPercent(buttonOpacity)
                     )
                 )
                 addState(

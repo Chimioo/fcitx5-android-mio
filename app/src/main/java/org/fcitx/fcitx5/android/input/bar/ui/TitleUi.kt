@@ -76,6 +76,11 @@ class TitleUi(override val ctx: Context, theme: Theme) : Ui {
             add(view, lParams(matchConstraints, dp(40)) {
                 centerVertically()
                 if (showTitle) {
+                    // Anchor the start right after the title text so the extension
+                    // (e.g. clipboard category chips) sits close to the title
+                    // instead of leaving a big gap caused by falling back to
+                    // wrap-content with only endOfParent set.
+                    after(titleText, dp(8))
                     endOfParent(dp(5))
                 } else {
                     centerHorizontally()

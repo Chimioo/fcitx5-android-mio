@@ -7,11 +7,11 @@ package org.fcitx.fcitx5.android.input
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.Paint
-import android.graphics.RenderEffect
-import android.graphics.Shader
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -59,6 +59,7 @@ import org.fcitx.fcitx5.android.input.popup.PopupComponent
 import org.fcitx.fcitx5.android.input.preedit.PreeditComponent
 import org.fcitx.fcitx5.android.input.wm.InputWindowManager
 import org.fcitx.fcitx5.android.utils.unset
+import org.lsposed.hiddenapibypass.HiddenApiBypass
 import org.mechdancer.dependency.DynamicScope
 import org.mechdancer.dependency.manager.wrapToUniqueComponent
 import org.mechdancer.dependency.plusAssign
@@ -72,6 +73,7 @@ import splitties.views.dsl.constraintlayout.constraintLayout
 import splitties.views.dsl.constraintlayout.endOfParent
 import splitties.views.dsl.constraintlayout.endToStartOf
 import splitties.views.dsl.constraintlayout.lParams
+import splitties.views.dsl.constraintlayout.matchConstraints
 import splitties.views.dsl.constraintlayout.startOfParent
 import splitties.views.dsl.constraintlayout.startToEndOf
 import splitties.views.dsl.constraintlayout.topOfParent
@@ -83,6 +85,7 @@ import splitties.views.dsl.core.view
 import splitties.views.dsl.core.withTheme
 import splitties.views.dsl.core.wrapContent
 import splitties.views.imageDrawable
+import timber.log.Timber
 import java.util.WeakHashMap
 import kotlin.math.min
 
@@ -95,9 +98,174 @@ class InputView(
 ) : BaseInputView(service, fcitx, theme) {
 
     private val keyBorder by ThemeManager.prefs.keyBorder
+    private val keyboardBlurRadius by ThemeManager.prefs.keyboardBlurRadius
+    private val keyboardOpacity by ThemeManager.prefs.keyboardOpacity
 
     private val customBackground = imageView {
         scaleType = ImageView.ScaleType.CENTER_CROP
+    }
+
+    private fun enableHiddenApiBypassForBlur(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return true
+        if (hiddenApiBypassForBlurEnabled) return true
+        return runCatching {
+            HiddenApiBypass.addHiddenApiExemptions("L")
+        }.onSuccess {
+            hiddenApiBypassForBlurEnabled = it
+            Timber.i("Frosted blur hidden API bypass enabled=$it")
+        }.onFailure {
+            Timber.w(it, "Frosted blur hidden API bypass failed")
+        }.getOrDefault(false)
+    }
+
+    private fun setBackgroundBlurCornerRadius(drawable: Drawable?, radius: Float) {
+        drawable ?: return
+        fun invokeCornerRadius(vararg parameterTypes: Class<*>): Boolean {
+            val args = FloatArray(parameterTypes.size) { radius }.toTypedArray()
+            val method = runCatching {
+                drawable.javaClass.getMethod("setCornerRadius", *parameterTypes)
+            }.getOrElse {
+                drawable.javaClass.getDeclaredMethod("setCornerRadius", *parameterTypes)
+                    .apply { isAccessible = true }
+            }
+            method.invoke(drawable, *args)
+            return true
+        }
+        runCatching {
+            invokeCornerRadius(java.lang.Float.TYPE)
+        }.recoverCatching {
+            invokeCornerRadius(
+                java.lang.Float.TYPE,
+                java.lang.Float.TYPE,
+                java.lang.Float.TYPE,
+                java.lang.Float.TYPE
+            )
+        }.onFailure {
+            Timber.w(it, "Frosted blur drawable corner radius update failed")
+        }
+    }
+
+    private fun keyboardBackgroundCornerRadius(): Float =
+        if (floatingKeyboardLayoutApplied) floatingKeyboardCornerRadiusPx.toFloat() else 0f
+
+    private fun updateKeyboardBackgroundClip() {
+        if (floatingKeyboardLayoutApplied) {
+            customBackground.outlineProvider = floatingKeyboardOutlineProvider
+            customBackground.clipToOutline = true
+            setBackgroundBlurCornerRadius(customBackground.background, keyboardBackgroundCornerRadius())
+        } else {
+            customBackground.clipToOutline = false
+            customBackground.outlineProvider = ViewOutlineProvider.BACKGROUND
+            setBackgroundBlurCornerRadius(customBackground.background, 0f)
+        }
+    }
+
+    private fun createBackgroundBlurDrawable(view: View, blurRadius: Int): Drawable? {
+        if (!enableHiddenApiBypassForBlur()) return null
+        return runCatching {
+            val viewRootImpl = runCatching {
+                View::class.java.getMethod("getViewRootImpl").invoke(view)
+            }.getOrNull() ?: view.rootView.parent
+            requireNotNull(viewRootImpl) { "ViewRootImpl is null" }
+            val blurDrawable = viewRootImpl.javaClass
+                .getDeclaredMethod("createBackgroundBlurDrawable")
+                .apply { isAccessible = true }
+                .invoke(viewRootImpl) as? Drawable
+            requireNotNull(blurDrawable) { "createBackgroundBlurDrawable returned null" }
+            blurDrawable.apply {
+                javaClass.getMethod("setBlurRadius", Integer.TYPE).invoke(this, blurRadius)
+                javaClass.getMethod("setColor", Integer.TYPE).invoke(this, Color.TRANSPARENT)
+            }
+            setBackgroundBlurCornerRadius(blurDrawable, keyboardBackgroundCornerRadius())
+            Timber.i(
+                "Frosted blur drawable created: root=%s drawable=%s radius=%d",
+                viewRootImpl.javaClass.name,
+                blurDrawable.javaClass.name,
+                blurRadius
+            )
+            blurDrawable
+        }.onFailure {
+            Timber.w(it, "Frosted blur drawable creation failed")
+        }.getOrNull()
+    }
+
+    private fun applyKeyboardBackground() {
+        val blurRadius = keyboardBlurRadius.coerceAtLeast(0)
+        val backgroundAlpha = ((100 - keyboardOpacity.coerceIn(0, 100)) * 255 / 100)
+        customBackground.background = null
+        if (blurRadius == 0) {
+            customBackground.scaleType = ImageView.ScaleType.CENTER_CROP
+            customBackground.imageDrawable = theme.backgroundDrawable(keyBorder)
+            customBackground.imageAlpha = backgroundAlpha
+            updateKeyboardBackgroundClip()
+            return
+        }
+
+        customBackground.scaleType = ImageView.ScaleType.FIT_XY
+        customBackground.imageAlpha = 255
+        customBackground.setImageBitmap(null)
+
+        fun applyFrostedLayer() {
+            val width = customBackground.width.takeIf { it > 0 } ?: keyboardView.width
+            val height = customBackground.height.takeIf { it > 0 } ?: keyboardView.height
+            if (width <= 0 || height <= 0) return
+
+            customBackground.background = createBackgroundBlurDrawable(this, blurRadius)
+            customBackground.setImageBitmap(createFrostedTintBitmap(width, height, blurRadius))
+            updateKeyboardBackgroundClip()
+        }
+
+        if (customBackground.width > 0 && customBackground.height > 0) {
+            applyFrostedLayer()
+        } else {
+            customBackground.addOnLayoutChangeListener(object : OnLayoutChangeListener {
+                override fun onLayoutChange(
+                    v: View,
+                    left: Int,
+                    top: Int,
+                    right: Int,
+                    bottom: Int,
+                    oldLeft: Int,
+                    oldTop: Int,
+                    oldRight: Int,
+                    oldBottom: Int
+                ) {
+                    customBackground.removeOnLayoutChangeListener(this)
+                    applyFrostedLayer()
+                }
+            })
+        }
+    }
+
+    private fun createFrostedTintBitmap(width: Int, height: Int, blurRadius: Int): Bitmap {
+        val alpha = keyboardTintAlpha(blurRadius)
+        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        val (topColor, bottomColor) = if (theme.isDark) {
+            Color.argb(alpha, 30, 35, 50) to Color.argb(alpha, 20, 25, 40)
+        } else {
+            Color.argb(alpha, 245, 248, 255) to Color.argb(alpha, 225, 230, 245)
+        }
+        GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(topColor, bottomColor)
+        ).apply {
+            setBounds(0, 0, width, height)
+            draw(canvas)
+        }
+        return bitmap
+    }
+
+    private fun keyboardTintAlpha(blurRadius: Int): Int {
+        val transparency = keyboardOpacity.coerceIn(0, 100)
+        if (blurRadius > 0 && transparency == 0) {
+            return 60
+        }
+        return ((100 - transparency) * 255 / 100).coerceIn(0, 255)
+    }
+
+    private companion object {
+        var hiddenApiBypassForBlurEnabled = false
     }
 
     private val placeholderOnClickListener = OnClickListener { }
@@ -528,16 +696,18 @@ class InputView(
 
         broadcaster.onImeUpdate(fcitx.runImmediately { inputMethodEntryCached })
 
-        customBackground.imageDrawable = theme.backgroundDrawable(keyBorder)
+        applyKeyboardBackground()
 
         keyboardView = constraintLayout {
             // allow MotionEvent to be delivered to keyboard while pressing on padding views.
             // although it should be default for apps targeting Honeycomb (3.0, API 11) and higher,
             // but it's not the case on some devices ... just set it here
             isMotionEventSplittingEnabled = true
-            add(customBackground, lParams {
-                centerVertically()
-                centerHorizontally()
+            add(customBackground, lParams(matchConstraints, matchConstraints) {
+                topOfParent()
+                bottomOfParent()
+                startOfParent()
+                endOfParent()
             })
             add(kawaiiBar.view, lParams(matchParent, dp(KawaiiBarComponent.HEIGHT)) {
                 topOfParent()
@@ -666,6 +836,7 @@ class InputView(
         restoreNonFloatingLayout()
         restorePreeditViewForNonFloating()
         floatingKeyboardLayoutApplied = false
+        updateKeyboardBackgroundClip()
         updateFloatingUiVisibility()
 
     }
@@ -694,6 +865,7 @@ class InputView(
 
         keyboardView.outlineProvider = floatingKeyboardOutlineProvider
         keyboardView.clipToOutline = true
+        updateKeyboardBackgroundClip()
 
         keyboardView.updateLayoutParams<LayoutParams> {
             startToStart = LayoutParams.PARENT_ID
@@ -890,6 +1062,7 @@ class InputView(
     private fun resetFloatingContentScales() {
         keyboardView.clipToOutline = false
         keyboardView.outlineProvider = ViewOutlineProvider.BACKGROUND
+        updateKeyboardBackgroundClip()
 
         floatingBaseTextSizePx.forEach { (tv, base) ->
             tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, base)

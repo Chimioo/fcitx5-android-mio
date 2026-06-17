@@ -15,12 +15,14 @@ import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.data.theme.Theme
 import org.fcitx.fcitx5.android.input.keyboard.CustomGestureView
 import splitties.dimensions.dp
+import splitties.views.dsl.constraintlayout.below
 import splitties.resources.drawable
 import splitties.views.dsl.constraintlayout.bottomOfParent
 import splitties.views.dsl.constraintlayout.centerVertically
 import splitties.views.dsl.constraintlayout.constraintLayout
 import splitties.views.dsl.constraintlayout.endOfParent
 import splitties.views.dsl.constraintlayout.lParams
+import splitties.views.dsl.constraintlayout.topOfParent
 import splitties.views.dsl.core.Ui
 import splitties.views.dsl.core.add
 import splitties.views.dsl.core.imageView
@@ -49,9 +51,21 @@ class ClipboardEntryUi(override val ctx: Context, private val theme: Theme, radi
         }
     }
 
+    val categoryView = textView {
+        maxLines = 1
+        textSize = 11f
+        setPaddingDp(8, 0, 20, 4)
+        ellipsize = TextUtils.TruncateAt.END
+        setTextColor(theme.altKeyTextColor)
+    }
+
     val layout = constraintLayout {
         add(textView, lParams(matchParent, wrapContent) {
-            centerVertically()
+            topOfParent(dp(2))
+        })
+        add(categoryView, lParams(matchParent, wrapContent) {
+            below(textView)
+            bottomOfParent(dp(2))
         })
         add(pin, lParams(dp(12), dp(12)) {
             bottomOfParent(dp(2))
@@ -76,8 +90,10 @@ class ClipboardEntryUi(override val ctx: Context, private val theme: Theme, radi
         add(layout, lParams(matchParent, matchParent))
     }
 
-    fun setEntry(text: String, pinned: Boolean) {
+    fun setEntry(text: String, category: String, pinned: Boolean) {
         textView.text = text
+        categoryView.text = category
+        categoryView.visibility = if (category.isBlank()) View.GONE else View.VISIBLE
         pin.visibility = if (pinned) View.VISIBLE else View.GONE
     }
 }

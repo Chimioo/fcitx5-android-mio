@@ -175,6 +175,9 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
         prefs.keyboard.floatingKeyboardHideOnFocusLoss,
         prefs.advanced.disableAnimation,
         prefs.advanced.ignoreSystemWindowInsets,
+        themePrefs.keyboardBlurRadius,
+        themePrefs.keyboardOpacity,
+        themePrefs.buttonOpacity,
     )
 
     private fun replaceInputView(theme: Theme): InputView {
@@ -1231,16 +1234,24 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
 
     private var showingDialog: Dialog? = null
 
-    fun showDialog(dialog: Dialog) {
+    fun showDialog(dialog: Dialog, requireIme: Boolean = false) {
         showingDialog?.dismiss()
         dialog.window?.also {
             it.attributes.apply {
                 token = decorView.windowToken
                 type = WindowManager.LayoutParams.TYPE_APPLICATION_ATTACHED_DIALOG
             }
-            it.addFlags(
-                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or WindowManager.LayoutParams.FLAG_DIM_BEHIND
-            )
+            if (requireIme) {
+                // Dialogs hosting an EditText must be allowed to take focus away
+                // from the IME window; otherwise FLAG_ALT_FOCUSABLE_IM (set by
+                // the default branch) flips focus off whenever the IME is up,
+                // and the EditText can never request a soft keyboard.
+                it.clearFlags(WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
+            } else {
+                it.addFlags(
+                    WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM or WindowManager.LayoutParams.FLAG_DIM_BEHIND
+                )
+            }
             it.setDimAmount(styledFloat(android.R.attr.backgroundDimAmount))
         }
         dialog.setOnDismissListener {

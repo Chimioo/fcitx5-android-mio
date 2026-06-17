@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import org.fcitx.fcitx5.android.data.clipboard.db.ClipboardCategory
 import org.fcitx.fcitx5.android.data.clipboard.db.ClipboardDao
 import org.fcitx.fcitx5.android.data.clipboard.db.ClipboardDatabase
 import org.fcitx.fcitx5.android.data.clipboard.db.ClipboardEntry
@@ -100,9 +101,29 @@ object ClipboardManager : ClipboardManager.OnPrimaryClipChangedListener,
 
     suspend fun get(id: Int) = clbDao.get(id)
 
+    suspend fun latestEntry() = clbDao.latestEntry()
+
     suspend fun haveUnpinned() = clbDao.haveUnpinned()
 
-    fun allEntries() = clbDao.allEntries()
+    fun allEntries(category: String? = null) =
+        if (category == null) clbDao.allEntries() else clbDao.entriesByCategory(category)
+
+    suspend fun categories(): List<String> {
+        val fromTable = clbDao.categoriesFromTable()
+        val fromEntries = clbDao.categoriesFromEntries()
+        return (fromTable + fromEntries).distinct().sortedBy { it.lowercase() }
+    }
+
+    suspend fun addCategory(category: String) {
+        val normalized = category.trim()
+        if (normalized.isEmpty()) return
+        clbDao.insertCategory(ClipboardCategory(name = normalized))
+    }
+
+    suspend fun removeCategory(category: String) {
+        if (category.isEmpty()) return
+        clbDao.deleteCategoryByName(category)
+    }
 
     suspend fun pin(id: Int) = clbDao.updatePinStatus(id, true)
 
@@ -113,6 +134,28 @@ object ClipboardManager : ClipboardManager.OnPrimaryClipChangedListener,
             if (id == it.id) updateLastEntry(it.copy(text = text))
         }
         clbDao.updateText(id, text)
+    }
+
+    suspend fun updateCategory(id: Int, category: String) {
+        val normalized = category.trim()
+        lastEntry?.let {
+            if (id == it.id) updateLastEntry(it.copy(category = normalized))
+        }
+        clbDao.updateCategory(id, normalized)
+    }
+
+    /**
+     * "Delete" a category by clearing it on every entry that uses it
+     * (those entries fall back to the Uncategorized bucket) and dropping it
+     * from the categories table so it stops showing up in the chip list.
+     */
+    suspend fun clearCategory(category: String) {
+        if (category.isEmpty()) return
+        lastEntry?.let {
+            if (it.category == category) updateLastEntry(it.copy(category = ""))
+        }
+        clbDao.clearCategory(category)
+        clbDao.deleteCategoryByName(category)
     }
 
     suspend fun delete(id: Int) {

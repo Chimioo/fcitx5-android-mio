@@ -85,6 +85,15 @@ class ThemePrefs(sharedPreferences: SharedPreferences) :
 
     val keyRadius = int(R.string.key_radius, "key_radius", 4, 0, 48, "dp")
 
+    val keyboardBlurRadius =
+        int(R.string.keyboard_blur_radius, "keyboard_blur_radius", 0, 0, 150)
+
+    val keyboardOpacity =
+        int(R.string.keyboard_opacity, "keyboard_opacity", 0, 0, 100, "%")
+
+    val buttonOpacity =
+        int(R.string.button_opacity, "button_opacity", 0, 0, 100, "%")
+
     val textEditingButtonRadius =
         int(R.string.text_editing_button_radius, "text_editing_button_radius", 8, 0, 48, "dp")
 

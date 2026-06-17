@@ -5,6 +5,7 @@
 package org.fcitx.fcitx5.android.input.clipboard
 
 import android.os.Build
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.paging.PagingDataAdapter
@@ -90,7 +91,7 @@ abstract class ClipboardAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val entry = getItem(position) ?: return
         with(holder.entryUi) {
-            setEntry(excerptText(entry.text, entry.sensitive && maskSensitive), entry.pinned)
+            setEntry(excerptText(entry.text, entry.sensitive && maskSensitive), entry.category, entry.pinned)
             root.setOnClickListener {
                 onPaste(entry)
             }
@@ -105,6 +106,9 @@ abstract class ClipboardAdapter(
                     menu.item(R.string.pin, R.drawable.ic_baseline_push_pin_24) {
                         onPin(entry.id)
                     }
+                }
+                menu.item(R.string.clipboard_set_category, R.drawable.ic_baseline_list_alt_24) {
+                    onCategory(entry, root)
                 }
                 menu.item(R.string.edit, R.drawable.ic_baseline_edit_24) {
                     onEdit(entry.id)
@@ -143,6 +147,8 @@ abstract class ClipboardAdapter(
     abstract fun onUnpin(id: Int)
 
     abstract fun onEdit(id: Int)
+
+    abstract fun onCategory(entry: ClipboardEntry, anchor: View)
 
     abstract fun onShare(entry: ClipboardEntry)
 
