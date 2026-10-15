@@ -10,12 +10,12 @@ import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.CreateDocument
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.color.MaterialColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,27 +73,22 @@ class LogActivity : AppCompatActivity() {
         }
         setContentView(binding.root)
         setSupportActionBar(binding.toolbar)
-        with(binding) {
-            setSupportActionBar(toolbar)
-            this@LogActivity.logView = logView
-            if (intent.hasExtra(FROM_CRASH)) {
-                fromCrash = true
-                supportActionBar!!.setTitle(R.string.crash_logs)
-                MaterialAlertDialogBuilder(this@LogActivity)
-                    .setTitle(R.string.app_crash)
-                    .setMessage(R.string.app_crash_message)
-                    .setPositiveButton(android.R.string.ok, null)
-                    .show()
-                logView.append("--------- Crash stacktrace")
-                logView.append(intent.getStringExtra(CRASH_STACK_TRACE) ?: "<empty>")
-                logView.setLogcat(Logcat(FcitxApplication.getLastPid()))
-            } else {
-                supportActionBar!!.apply {
-                    setDisplayHomeAsUpEnabled(true)
-                    setTitle(R.string.real_time_logs)
-                }
-                logView.setLogcat(Logcat())
-            }
+        this@LogActivity.logView = binding.logView
+        if (intent.hasExtra(FROM_CRASH)) {
+            fromCrash = true
+            supportActionBar!!.setTitle(R.string.crash_logs)
+            AlertDialog.Builder(this@LogActivity)
+                .setTitle(R.string.app_crash)
+                .setMessage(R.string.app_crash_message)
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
+            logView.append("--------- Crash stacktrace")
+            logView.append(intent.getStringExtra(CRASH_STACK_TRACE) ?: "<empty>")
+            logView.setLogcat(Logcat(FcitxApplication.getLastPid()))
+        } else {
+            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
+            supportActionBar!!.setTitle(R.string.real_time_logs)
+            logView.setLogcat(Logcat())
         }
         registerLauncher()
     }

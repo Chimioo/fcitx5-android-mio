@@ -22,6 +22,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,7 +35,9 @@ import org.fcitx.fcitx5.android.data.table.TableManager
 import org.fcitx.fcitx5.android.data.table.dict.Dictionary
 import org.fcitx.fcitx5.android.ui.common.BaseDynamicListUi
 import org.fcitx.fcitx5.android.ui.common.OnItemChangedListener
+import org.fcitx.fcitx5.android.ui.main.EditDeleteMenuProvider
 import org.fcitx.fcitx5.android.ui.main.MainViewModel
+import org.fcitx.fcitx5.android.ui.main.MainViewModel.ButtonMode
 import org.fcitx.fcitx5.android.utils.NaiveDustman
 import org.fcitx.fcitx5.android.utils.importErrorDialog
 import org.fcitx.fcitx5.android.utils.notificationManager
@@ -130,6 +133,23 @@ class TableInputMethodFragment : Fragment(), OnItemChangedListener<TableBasedInp
         resetDustman()
         ui.addOnItemChangedListener(this)
         return ui.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        viewModel.toolbarButton.value =
+            if (ui.entries.isNotEmpty()) ButtonMode.EDIT else ButtonMode.NONE
+        requireActivity().addMenuProvider(
+            EditDeleteMenuProvider(
+                buttonMode = viewModel.toolbarButton,
+                editButtonAction = { ui.enterMultiSelect(requireActivity().onBackPressedDispatcher) },
+                deleteButtonAction = { ui.deleteSelected(); ui.exitMultiSelect() },
+                menuHost = requireActivity(),
+                lifecycleOwner = viewLifecycleOwner,
+            ),
+            viewLifecycleOwner,
+            Lifecycle.State.STARTED
+        )
     }
 
     private fun createNotificationChannel() {
@@ -400,18 +420,8 @@ class TableInputMethodFragment : Fragment(), OnItemChangedListener<TableBasedInp
         batchRemove(indexed)
     }
 
-    override fun onStart() {
-        super.onStart()
-        if (uiInitialized) {
-            viewModel.enableToolbarEditButton(ui.entries.isNotEmpty()) {
-                ui.enterMultiSelect(requireActivity().onBackPressedDispatcher)
-            }
-        }
-    }
-
     override fun onStop() {
         reloadConfig()
-        viewModel.disableToolbarEditButton()
         if (uiInitialized) {
             ui.exitMultiSelect()
         }

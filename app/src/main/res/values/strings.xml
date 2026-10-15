@@ -391,4 +391,7 @@
     <string name="unknown">Unknown</string>
     <string name="edit_network_dict">Edit network dictionary</string>
     <string name="confirm">Confirm</string>
+    <string name="keyboard_height_percent_base">Keyboard height percent base</string>
+    <string name="display_metrics">Display metrics (Resources.getDisplayMetrics)</string>
+    <string name="real_size">Real size (Display.getRealSize)</string>
 </resources>

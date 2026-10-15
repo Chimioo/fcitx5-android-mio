@@ -7,32 +7,26 @@ package org.fcitx.fcitx5.android.ui.main
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.view.Menu
 import android.view.ViewGroup
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.core.view.forEach
 import androidx.core.view.updateLayoutParams
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.color.MaterialColors
 import org.fcitx.fcitx5.android.BuildConfig
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.data.prefs.AppPrefs
 import org.fcitx.fcitx5.android.databinding.ActivityMainBinding
 import org.fcitx.fcitx5.android.ui.main.settings.SettingsRoute
 import org.fcitx.fcitx5.android.ui.setup.SetupActivity
-import org.fcitx.fcitx5.android.utils.Const
-import org.fcitx.fcitx5.android.utils.item
 import org.fcitx.fcitx5.android.utils.navigateWithAnim
 import org.fcitx.fcitx5.android.utils.parcelable
 import org.fcitx.fcitx5.android.utils.startActivity
@@ -60,26 +54,13 @@ class MainActivity : AppCompatActivity() {
             windowInsets
         }
         setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         // always show toolbar back arrow icon
-        // https://android.googlesource.com/platform/frameworks/support/+/32e643112d0217619237a0d7101b50919c6caf51/navigation/navigation-ui/src/main/java/androidx/navigation/ui/AbstractAppBarOnDestinationChangedListener.kt#80
-        binding.toolbar.navigationIcon = DrawerArrowDrawable(this).apply { progress = 1f }
-        // show menu icon and other action icons on toolbar
-        // don't use `setSupportActionBar(binding.toolbar)` here,
-        // because navController would change toolbar title, we need to control it by ourselves
-        setupToolbarMenu(binding.toolbar.menu)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         navController = binding.navHostFragment.getFragment<NavHostFragment>().navController
         navController.graph = SettingsRoute.createGraph(navController)
-        binding.toolbar.setNavigationOnClickListener {
-            // prevent navigate up when child fragment has enabled `OnBackPressedCallback`
-            if (onBackPressedDispatcher.hasEnabledCallbacks()) {
-                onBackPressedDispatcher.onBackPressed()
-                return@setNavigationOnClickListener
-            }
-            // "minimize" the activity if we can't go back
-            navController.navigateUp() || onSupportNavigateUp() || moveTaskToBack(false)
-        }
         viewModel.toolbarTitle.observe(this) {
-            binding.toolbar.title = it
+            supportActionBar!!.title = it
         }
         viewModel.toolbarShadow.observe(this) {
             binding.toolbar.elevation = dp(if (it) 4f else 0f)
@@ -101,6 +82,16 @@ class MainActivity : AppCompatActivity() {
         processIntent(intent)
     }
 
+    override fun onSupportNavigateUp(): Boolean {
+        // prevent navigate up when child fragment has enabled `OnBackPressedCallback`
+        if (onBackPressedDispatcher.hasEnabledCallbacks()) {
+            onBackPressedDispatcher.onBackPressed()
+            return true
+        }
+        // "minimize" the activity if we can't go back
+        return navController.navigateUp() || super.onSupportNavigateUp() || moveTaskToBack(false)
+    }
+
     private fun processIntent(intent: Intent?) {
         val action = intent?.action ?: return
         when (action) {
@@ -108,7 +99,7 @@ class MainActivity : AppCompatActivity() {
                 startActivity<SetupActivity>()
             }
             Intent.ACTION_VIEW -> intent.data?.let {
-                MaterialAlertDialogBuilder(this)
+                AlertDialog.Builder(this)
                     .setTitle(R.string.pinyin_dict)
                     .setMessage(R.string.whether_import_dict)
                     .setNegativeButton(android.R.string.cancel) { _, _ -> }
@@ -126,43 +117,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupToolbarMenu(menu: Menu) {
-        val iconTint = MaterialColors.getColor(this, com.google.android.material.R.attr.colorOnSurfaceVariant, 0)
-        menu.item(R.string.save, R.drawable.ic_baseline_save_24, iconTint, true) {
-            viewModel.toolbarSaveButtonOnClickListener.value?.invoke()
-        }.apply {
-            viewModel.toolbarSaveButtonOnClickListener
-                .observe(this@MainActivity) { listener -> isVisible = listener != null }
-        }
-        val aboutMenuItems = listOf(
-            menu.item(R.string.faq) {
-                startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(Const.faqUrl)))
-            },
-            menu.item(R.string.developer) {
-                navController.navigateWithAnim(SettingsRoute.Developer)
-            },
-            menu.item(R.string.about) {
-                navController.navigateWithAnim(SettingsRoute.About)
-            }
-        )
-        viewModel.aboutButton.observe(this@MainActivity) { enabled ->
-            aboutMenuItems.forEach { menu -> menu.isVisible = enabled }
-        }
-        menu.item(R.string.edit, R.drawable.ic_baseline_edit_24, iconTint, true) {
-            viewModel.toolbarEditButtonOnClickListener.value?.invoke()
-        }.apply {
-            viewModel.toolbarEditButtonVisible.observe(this@MainActivity) { isVisible = it }
-        }
-        menu.item(R.string.delete, R.drawable.ic_baseline_delete_24, iconTint, true) {
-            viewModel.toolbarDeleteButtonOnClickListener.value?.invoke()
-        }.apply {
-            viewModel.toolbarDeleteButtonOnClickListener
-                .observe(this@MainActivity) { listener -> isVisible = listener != null }
-        }
-        // all menus should be invisible and enabled on demand
-        menu.forEach { it.isVisible = false }
-    }
-
     private var needNotifications by AppPrefs.getInstance().internal.needNotifications
 
     private fun checkNotificationPermission() {
@@ -175,7 +129,7 @@ class MainActivity : AppCompatActivity() {
             if (!needNotifications) return
             // always show a dialog to explain why we need notification permission,
             // regardless of `shouldShowRequestPermissionRationale(...)`
-            MaterialAlertDialogBuilder(this)
+            AlertDialog.Builder(this)
                 .setIconAttribute(android.R.attr.alertDialogIcon)
                 .setTitle(R.string.notification_permission_title)
                 .setMessage(R.string.notification_permission_message)
@@ -213,5 +167,3 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
-
-

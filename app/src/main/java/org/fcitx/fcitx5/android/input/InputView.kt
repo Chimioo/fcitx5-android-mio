@@ -12,6 +12,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.Paint
+import android.graphics.Point
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
@@ -50,6 +51,8 @@ import org.fcitx.fcitx5.android.input.editing.TextEditingButton
 import org.fcitx.fcitx5.android.input.keyboard.CommonKeyActionListener
 import org.fcitx.fcitx5.android.input.keyboard.FloatingKeyboardShowMode
 import org.fcitx.fcitx5.android.input.keyboard.KeyView
+import org.fcitx.fcitx5.android.input.keyboard.KeyboardHeightPercentBase.DisplayMetrics
+import org.fcitx.fcitx5.android.input.keyboard.KeyboardHeightPercentBase.RealSize
 import org.fcitx.fcitx5.android.input.keyboard.KeyboardWindow
 import org.fcitx.fcitx5.android.input.picker.emojiPicker
 import org.fcitx.fcitx5.android.input.picker.emoticonPicker
@@ -58,6 +61,7 @@ import org.fcitx.fcitx5.android.input.popup.PopupComponent
 import org.fcitx.fcitx5.android.input.preedit.PreeditComponent
 import org.fcitx.fcitx5.android.input.wm.InputWindowManager
 import org.fcitx.fcitx5.android.utils.unset
+import org.fcitx.fcitx5.android.utils.windowManager
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 import org.mechdancer.dependency.DynamicScope
 import org.mechdancer.dependency.manager.wrapToUniqueComponent
@@ -86,7 +90,6 @@ import splitties.views.imageDrawable
 import timber.log.Timber
 import java.util.WeakHashMap
 import kotlin.math.min
-
 
 @SuppressLint("ViewConstructor")
 class InputView(
@@ -600,6 +603,8 @@ class InputView(
             floatingHandleBar.visibility = VISIBLE
         }
     }
+    private val advancedPrefs = AppPrefs.getInstance().advanced
+    private val keyboardHeightPercentBase = advancedPrefs.keyboardHeightPercentBase
 
     private val keyboardSizePrefs = listOf(
         keyboardHeightPercent,
@@ -608,15 +613,29 @@ class InputView(
         keyboardSidePaddingLandscape,
         keyboardBottomPadding,
         keyboardBottomPaddingLandscape,
+        keyboardHeightPercentBase,
     )
 
     private val keyboardHeightPx: Int
         get() {
+            val baseType = keyboardHeightPercentBase.getValue()
+            val base = when (baseType) {
+                DisplayMetrics -> resources.displayMetrics.heightPixels
+                RealSize -> Point().also {
+                    @Suppress("DEPRECATION")
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        context.display
+                    } else {
+                        context.windowManager.defaultDisplay
+                    }.getRealSize(it)
+                }.y
+            }
             val percent = when (resources.configuration.orientation) {
                 Configuration.ORIENTATION_LANDSCAPE -> keyboardHeightPercentLandscape
                 else -> keyboardHeightPercent
             }.getValue()
-            return resources.displayMetrics.heightPixels * percent / 100
+            Timber.d("keyboardHeightPx get(): baseType=${baseType}, base=${base}, percent=${percent}")
+            return base * percent / 100
         }
 
     private val keyboardSidePaddingPx: Int
@@ -786,6 +805,7 @@ class InputView(
         setupFloatingKeyboard()
 
         keyboardPrefs.registerOnChangeListener(onKeyboardSizeChangeListener)
+        advancedPrefs.registerOnChangeListener(onKeyboardSizeChangeListener)
 
         setOnClickListener {
             if (isFloatingKeyboardActive && keyboardPrefs.floatingKeyboardHideOnFocusLoss.getValue()) {
@@ -1309,6 +1329,7 @@ class InputView(
     }
 
     override fun onDetachedFromWindow() {
+        advancedPrefs.unregisterOnChangeListener(onKeyboardSizeChangeListener)
         keyboardPrefs.unregisterOnChangeListener(onKeyboardSizeChangeListener)
         // clear DynamicScope, implies that InputView should not be attached again after detached.
         scope.clear()

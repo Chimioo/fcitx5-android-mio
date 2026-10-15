@@ -14,6 +14,7 @@ import android.widget.PopupMenu
 import androidx.annotation.Keep
 import androidx.core.text.bold
 import androidx.core.text.buildSpannedString
+import androidx.core.text.color
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.Pager
@@ -48,6 +49,7 @@ import org.fcitx.fcitx5.android.input.wm.InputWindowManager
 import org.fcitx.fcitx5.android.utils.AppUtil
 import org.fcitx.fcitx5.android.utils.EventStateMachine
 import org.fcitx.fcitx5.android.utils.item
+import org.fcitx.fcitx5.android.utils.styledColorOrDefault
 import org.mechdancer.dependency.manager.must
 import splitties.dimensions.dp
 import splitties.views.dsl.core.withTheme
@@ -271,7 +273,9 @@ private var categoryDialog: AlertDialog? = null
         promptMenu = PopupMenu(context, ui.deleteAllButton).apply {
             menu.add(buildSpannedString {
                 bold {
-                    append(context.getString(if (skipPinned) R.string.delete_all_except_pinned else R.string.delete_all_pinned_items))
+                    color(context.styledColorOrDefault(android.R.attr.colorAccent, theme.genericActiveForegroundColor)) {
+                        append(context.getString(if (skipPinned) R.string.delete_all_except_pinned else R.string.delete_all_pinned_items))
+                    }
                 }
             }).isEnabled = false
             menu.add(android.R.string.cancel)
