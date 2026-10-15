@@ -79,6 +79,7 @@ import org.fcitx.fcitx5.android.input.voice.engines.doubao.DoubaoSpeechEngine
 import org.fcitx.fcitx5.android.input.voice.engines.iflytek.IflytekSpeechEngine
 import org.fcitx.fcitx5.android.input.voice.engines.iflytek.IflytekStdSpeechEngine
 import org.fcitx.fcitx5.android.utils.InputMethodUtil
+import org.fcitx.fcitx5.android.utils.alpha
 import org.fcitx.fcitx5.android.utils.forceShowSelf
 import org.fcitx.fcitx5.android.utils.inputMethodManager
 import org.fcitx.fcitx5.android.utils.isTypeNull
@@ -156,7 +157,7 @@ class FcitxInputMethodService : LifecycleInputMethodService() {
 
     private var cursorUpdateIndex: Int = 0
 
-<    private var highlightColor: Int = DefaultHighlightColor
+    private var highlightColor: Int = DefaultHighlightColor
     private val prefs = AppPrefs.getInstance()
     private val inlineSuggestions by prefs.keyboard.inlineSuggestions
     private val ignoreSystemCursor by prefs.advanced.ignoreSystemCursor
