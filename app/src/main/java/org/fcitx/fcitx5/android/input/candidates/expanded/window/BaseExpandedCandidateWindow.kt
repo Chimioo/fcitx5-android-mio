@@ -179,10 +179,21 @@ abstract class BaseExpandedCandidateWindow<T : BaseExpandedCandidateWindow<T>> :
 
     fun bindCandidateUiViewHolder(holder: CandidateViewHolder) {
         holder.itemView.setOnClickListener {
-            fcitx.launchOnReady { it.select(holder.idx) }
+            // Must use holder.idx captured at bind time together with the displayed text:
+            // Paging loads are async and `adapter.offset` may already have moved on for
+            // the next generation while old items are still displayed, so recomputing
+            // `bindingAdapterPosition + adapter.offset` here could select a different
+            // candidate than the one tapped. holder.idx always matches what's displayed.
+            val idx = holder.idx
+            if (idx >= 0) {
+                fcitx.launchOnReady { it.select(idx) }
+            }
         }
         holder.itemView.setOnLongClickListener {
-            inputView.showCandidateActionMenu(holder.idx, holder.candidate.text, holder.ui.root)
+            val idx = holder.idx
+            if (idx >= 0) {
+                inputView.showCandidateActionMenu(idx, holder.candidate.text, holder.ui.root)
+            }
             true
         }
     }

@@ -48,8 +48,17 @@ class PagedCandidatesUi(
             setHasStableIds(true)
         }
 
-        override fun getItemId(position: Int): Long =
-            data.candidates.getOrNull(position).hashCode().toLong()
+        override fun getItemId(position: Int): Long {
+            if (position >= data.candidates.size) {
+                // pagination footer has no candidate; keep it distinct from any candidate id
+                return Long.MAX_VALUE
+            }
+            val content = data.candidates.getOrNull(position)?.hashCode()?.toLong() ?: 0L
+            // Mix in position for the same reason as HorizontalCandidateViewAdapter:
+            // candidate selection is index-based, content-only ids allow ViewHolder moves
+            // without rebinding, which desyncs bind-time `position` in click listeners.
+            return (position.toLong() shl 32) xor (content and 0xffffffffL)
+        }
 
         override fun getItemCount() =
             data.candidates.size + (if (data.hasPrev || data.hasNext) 1 else 0)
@@ -79,10 +88,19 @@ class PagedCandidatesUi(
                     val candidate = data.candidates[position]
                     holder.ui.update(candidate, active = position == data.cursorIndex)
                     holder.ui.root.setOnClickListener {
-                        onCandidateClick.invoke(position)
+                        // Never capture bind-time `position`/`candidate`: the list is fully
+                        // replaced via notifyDataSetChanged on every update, so a queued click
+                        // may fire after a rebind with different data at the same slot.
+                        val pos = holder.bindingAdapterPosition
+                        if (pos != RecyclerView.NO_POSITION && pos < data.candidates.size) {
+                            onCandidateClick.invoke(pos)
+                        }
                     }
                     holder.ui.root.setOnLongClickListener { v ->
-                        onCandidateAction.invoke(position, candidate.text, v)
+                        val pos = holder.bindingAdapterPosition
+                        if (pos != RecyclerView.NO_POSITION && pos < data.candidates.size) {
+                            onCandidateAction.invoke(pos, data.candidates[pos].text, v)
+                        }
                         true
                     }
                     holder.ui.root.updateLayoutParams<FlexboxLayoutManager.LayoutParams> {
@@ -103,6 +121,7 @@ class PagedCandidatesUi(
         override fun onViewRecycled(holder: UiHolder) {
             if (holder is UiHolder.Candidate) {
                 holder.ui.root.setOnClickListener(null)
+                holder.ui.root.setOnLongClickListener(null)
             }
             super.onViewRecycled(holder)
         }

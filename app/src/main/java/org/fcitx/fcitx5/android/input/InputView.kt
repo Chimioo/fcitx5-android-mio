@@ -18,6 +18,7 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.util.TypedValue
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import android.view.ViewGroup
@@ -807,11 +808,53 @@ class InputView(
         keyboardPrefs.registerOnChangeListener(onKeyboardSizeChangeListener)
         advancedPrefs.registerOnChangeListener(onKeyboardSizeChangeListener)
 
-        setOnClickListener {
-            if (isFloatingKeyboardActive && keyboardPrefs.floatingKeyboardHideOnFocusLoss.getValue()) {
-                service.requestHideSelf(0)
+        // Hide floating keyboard only when tapping outside of it:
+        // touches landing on empty gaps inside the floating keyboard (padding,
+        // handle strip, gaps between keys) are not consumed by children and would
+        // otherwise bubble up here and hide the keyboard unexpectedly.
+        setOnTouchListener(object : View.OnTouchListener {
+            var downX = 0f
+            var downY = 0f
+            var downOutside = false
+            override fun onTouch(v: View, e: MotionEvent): Boolean {
+                if (!isFloatingKeyboardActive ||
+                    !keyboardPrefs.floatingKeyboardHideOnFocusLoss.getValue()
+                ) {
+                    downOutside = false
+                    return false
+                }
+                when (e.actionMasked) {
+                    MotionEvent.ACTION_DOWN -> {
+                        downX = e.x
+                        downY = e.y
+                        downOutside = !isTouchOnFloatingKeyboard(e.x, e.y)
+                        // Claim the gesture here: InputView itself is not clickable,
+                        // returning false would drop the gesture and UP would never
+                        // reach us, silently disabling hide-on-focus-loss.
+                        // Reaching here means no child consumed DOWN, so it's safe.
+                        return true
+                    }
+                    MotionEvent.ACTION_POINTER_DOWN -> {
+                        // multi-touch is not a tap
+                        downOutside = false
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        if (downOutside && !isTouchOnFloatingKeyboard(e.x, e.y)) {
+                            val slop = ViewConfiguration.get(context).scaledTouchSlop
+                            if (kotlin.math.abs(e.x - downX) <= slop &&
+                                kotlin.math.abs(e.y - downY) <= slop
+                            ) {
+                                service.requestHideSelf(0)
+                            }
+                        }
+                        downOutside = false
+                        return true
+                    }
+                    MotionEvent.ACTION_CANCEL -> downOutside = false
+                }
+                return false
             }
-        }
+        })
     }
 
     private fun setupFloatingKeyboard() {
@@ -913,6 +956,23 @@ class InputView(
         keyboardView.x = floatingKeyboardX.toFloat()
         keyboardView.y = floatingKeyboardY.toFloat()
         updateFloatingPreeditPosition()
+    }
+
+    /**
+     * Move floating keyboard back to the center of the screen.
+     * No-op when floating keyboard is not active.
+     */
+    fun centerFloatingKeyboard() {
+        if (!isFloatingKeyboardActive || !floatingKeyboardLayoutApplied) return
+        val parent = keyboardView.parent as? View ?: return
+        val w = keyboardView.width
+        val h = keyboardView.height
+        if (w <= 0 || h <= 0 || parent.width <= 0 || parent.height <= 0) return
+        keyboardView.x = ((parent.width - w) / 2f).coerceAtLeast(0f)
+        keyboardView.y = ((parent.height - h) / 2f).coerceAtLeast(0f)
+        clampFloatingPosition()
+        updateFloatingPreeditPosition()
+        updateFloatingCornerHandlesPosition()
     }
 
     private fun setupFloatingDragHandle() {
@@ -1204,6 +1264,30 @@ class InputView(
 
         floatingCornerBR.x = x + w - cornerSize + outside
         floatingCornerBR.y = y + h - cornerSize + outside
+    }
+
+    /**
+     * Whether the touch point (in [InputView] coordinates) lands on floating
+     * keyboard UI: the keyboard panel itself, the floating preedit above it,
+     * or the floating drag-handle strip. Touches here must not hide keyboard.
+     */
+    private fun isTouchOnFloatingKeyboard(x: Float, y: Float): Boolean {
+        if (x in keyboardView.x..(keyboardView.x + keyboardView.width) &&
+            y in keyboardView.y..(keyboardView.y + keyboardView.height)
+        ) {
+            return true
+        }
+        preedit.ui.root.takeIf { it.visibility == VISIBLE }?.let {
+            if (x in it.x..(it.x + it.width) && y in it.y..(it.y + it.height)) {
+                return true
+            }
+        }
+        floatingHandleContainer.takeIf { it.visibility == VISIBLE }?.let {
+            if (x in it.x..(it.x + it.width) && y in it.y..(it.y + it.height)) {
+                return true
+            }
+        }
+        return false
     }
 
     private fun clampFloatingPosition() {

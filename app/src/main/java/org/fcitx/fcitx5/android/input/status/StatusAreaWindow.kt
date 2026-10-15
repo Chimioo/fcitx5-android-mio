@@ -23,10 +23,13 @@ import org.fcitx.fcitx5.android.input.bar.ui.ToolButton
 import org.fcitx.fcitx5.android.input.broadcast.InputBroadcastReceiver
 import org.fcitx.fcitx5.android.input.dependency.fcitx
 import org.fcitx.fcitx5.android.input.dependency.inputMethodService
+import org.fcitx.fcitx5.android.input.dependency.inputView
 import org.fcitx.fcitx5.android.input.dependency.theme
 import org.fcitx.fcitx5.android.input.editorinfo.EditorInfoWindow
+import org.fcitx.fcitx5.android.input.keyboard.KeyboardWindow
 import org.fcitx.fcitx5.android.input.status.StatusAreaEntry.Android.Type.InputMethod
 import org.fcitx.fcitx5.android.input.status.StatusAreaEntry.Android.Type.Keyboard
+import org.fcitx.fcitx5.android.input.status.StatusAreaEntry.Android.Type.RecenterFloatingKeyboard
 import org.fcitx.fcitx5.android.input.status.StatusAreaEntry.Android.Type.ReloadConfig
 import org.fcitx.fcitx5.android.input.status.StatusAreaEntry.Android.Type.ThemeList
 import org.fcitx.fcitx5.android.input.wm.InputWindow
@@ -49,11 +52,12 @@ class StatusAreaWindow : InputWindow.ExtendedInputWindow<StatusAreaWindow>(),
     private val fcitx: FcitxConnection by manager.fcitx()
     private val theme by manager.theme()
     private val windowManager: InputWindowManager by manager.must()
+    private val inputView by manager.inputView()
 
     private val editorInfoInspector by AppPrefs.getInstance().internal.editorInfoInspector
 
-    private val staticEntries by lazy {
-        arrayOf(
+    private fun staticEntries(): Array<StatusAreaEntry.Android> {
+        val list = arrayListOf(
             StatusAreaEntry.Android(
                 context.getString(R.string.theme),
                 R.drawable.ic_baseline_palette_24,
@@ -75,6 +79,16 @@ class StatusAreaWindow : InputWindow.ExtendedInputWindow<StatusAreaWindow>(),
                 Keyboard
             )
         )
+        if (inputView.isFloatingKeyboardActive) {
+            list.add(
+                StatusAreaEntry.Android(
+                    context.getString(R.string.recenter_floating_keyboard),
+                    R.drawable.ic_baseline_filter_center_focus_24,
+                    RecenterFloatingKeyboard
+                )
+            )
+        }
+        return list.toTypedArray()
     }
 
     private fun activateAction(action: Action) {
@@ -147,6 +161,10 @@ class StatusAreaWindow : InputWindow.ExtendedInputWindow<StatusAreaWindow>(),
                         }
                         Keyboard -> AppUtil.launchMainToKeyboard(context)
                         ThemeList -> AppUtil.launchMainToThemeList(context)
+                        RecenterFloatingKeyboard -> {
+                            inputView.centerFloatingKeyboard()
+                            windowManager.attachWindow(KeyboardWindow)
+                        }
                     }
                 }
             }
@@ -169,7 +187,7 @@ class StatusAreaWindow : InputWindow.ExtendedInputWindow<StatusAreaWindow>(),
 
     override fun onStatusAreaUpdate(actions: Array<Action>) {
         adapter.entries = arrayOf(
-            *staticEntries,
+            *staticEntries(),
             *Array(actions.size) { StatusAreaEntry.fromAction(actions[it]) }
         )
     }

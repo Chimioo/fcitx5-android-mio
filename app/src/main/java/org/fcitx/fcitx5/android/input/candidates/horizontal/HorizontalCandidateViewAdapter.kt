@@ -41,7 +41,14 @@ open class HorizontalCandidateViewAdapter(val theme: Theme) :
 
     override fun getItemCount() = candidates.size
 
-    override fun getItemId(position: Int) = candidates.getOrNull(position).hashCode().toLong()
+    override fun getItemId(position: Int): Long {
+        val content = candidates.getOrNull(position)?.hashCode()?.toLong() ?: 0L
+        // Include position in stable id: candidate identity is positional (select by index),
+        // content-only ids let RecyclerView move ViewHolders without rebinding on updates
+        // (e.g. [A,B,C] -> [B,C,D]), leaving stale idx in click listeners and selecting
+        // the wrong candidate. Mixing in position also keeps ids unique for duplicates.
+        return (position.toLong() shl 32) xor (content and 0xffffffffL)
+    }
 
     @CallSuper
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CandidateViewHolder {

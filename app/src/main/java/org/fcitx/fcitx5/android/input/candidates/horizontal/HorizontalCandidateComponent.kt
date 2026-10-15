@@ -94,10 +94,21 @@ class HorizontalCandidateComponent :
                     flexGrow = layoutFlexGrow
                 }
                 holder.itemView.setOnClickListener {
-                    fcitx.launchOnReady { it.select(holder.idx) }
+                    // Do not use cached holder.idx or bind-time position here:
+                    // with stable ids RecyclerView may move ViewHolders without rebinding
+                    // when the candidate list updates, leaving idx stale and selecting
+                    // the wrong candidate. Always resolve the current layout position.
+                    val pos = holder.bindingAdapterPosition
+                    if (pos != RecyclerView.NO_POSITION) {
+                        fcitx.launchOnReady { it.select(pos) }
+                    }
                 }
                 holder.itemView.setOnLongClickListener {
-                    inputView.showCandidateActionMenu(holder.idx, holder.candidate.text, holder.ui.root)
+                    val pos = holder.bindingAdapterPosition
+                    if (pos != RecyclerView.NO_POSITION) {
+                        val text = candidates.getOrNull(pos)?.text ?: holder.candidate.text
+                        inputView.showCandidateActionMenu(pos, text, holder.ui.root)
+                    }
                     true
                 }
             }
