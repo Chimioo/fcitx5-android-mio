@@ -10,9 +10,19 @@ import org.gradle.api.Project
 import org.gradle.api.tasks.Delete
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.register
+import java.io.File
 import java.util.Locale
 
 open class NativeBaseConventionPlugin : Plugin<Project> {
+
+    private fun defaultWindowsMsysPath(vararg segments: String): String? {
+        // Prefer C:/msys64 (default installer location), fall back to D:/msys2 (CI legacy path)
+        listOf("C:/msys64", "D:/msys2").forEach { root ->
+            val candidate = File(root, segments.joinToString("/"))
+            if (candidate.exists()) return candidate.invariantSeparatorsPath
+        }
+        return null
+    }
 
     override fun apply(target: Project) {
         val prebuiltDir = target.rootProject.projectDir.resolve("lib/fcitx5/src/main/cpp/prebuilt")
@@ -31,7 +41,7 @@ open class NativeBaseConventionPlugin : Plugin<Project> {
                                     .lowercase(Locale.ROOT)
                                     .contains("windows")
                             ) {
-                                "D:/msys2/ucrt64/share/ECM/cmake"
+                                defaultWindowsMsysPath("ucrt64", "share", "ECM", "cmake")
                             } else {
                                 null
                             }
@@ -41,13 +51,13 @@ open class NativeBaseConventionPlugin : Plugin<Project> {
                             .contains("windows")
                         val msgfmt = System.getenv("GETTEXT_MSGFMT_EXECUTABLE")
                             ?: if (isWindows) {
-                                "D:/msys2/ucrt64/bin/msgfmt.exe"
+                                defaultWindowsMsysPath("ucrt64", "bin", "msgfmt.exe")
                             } else {
                                 null
                             }
                         val msgmerge = System.getenv("GETTEXT_MSGMERGE_EXECUTABLE")
                             ?: if (isWindows) {
-                                "D:/msys2/ucrt64/bin/msgmerge.exe"
+                                defaultWindowsMsysPath("ucrt64", "bin", "msgmerge.exe")
                             } else {
                                 null
                             }
