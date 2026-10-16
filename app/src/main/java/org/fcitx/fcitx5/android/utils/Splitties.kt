@@ -15,6 +15,7 @@ import androidx.annotation.ColorInt
 import androidx.constraintlayout.widget.ConstraintLayout
 import splitties.experimental.InternalSplittiesApi
 import splitties.resources.styledColor
+import splitties.resources.styledColorSL
 import splitties.resources.withResolvedThemeAttribute
 import splitties.views.dsl.core.Ui
 
@@ -45,3 +46,20 @@ inline fun View.styledColorOrDefault(@AttrRes attrRes: Int, @ColorInt defaultVal
 @Suppress("NOTHING_TO_INLINE")
 inline fun Ui.styledColorOrDefault(@AttrRes attrRes: Int, @ColorInt defaultValue: Int) =
     ctx.styledColorOrDefault(attrRes, defaultValue)
+
+fun Context.styledColorSLOrDefault(
+    @AttrRes attrRes: Int,
+    defaultValue: android.content.res.ColorStateList?
+) = runCatching { styledColorSL(attrRes) }.getOrDefault(defaultValue)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun View.styledColorSLOrDefault(
+    @AttrRes attrRes: Int,
+    defaultValue: android.content.res.ColorStateList?
+) = context.styledColorSLOrDefault(attrRes, defaultValue)
+
+@Suppress("NOTHING_TO_INLINE")
+inline fun Ui.styledColorSLOrDefault(
+    @AttrRes attrRes: Int,
+    defaultValue: android.content.res.ColorStateList?
+) = ctx.styledColorSLOrDefault(attrRes, defaultValue)

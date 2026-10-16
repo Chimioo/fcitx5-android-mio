@@ -15,7 +15,7 @@ import androidx.lifecycle.LiveData
 import org.fcitx.fcitx5.android.R
 import org.fcitx.fcitx5.android.ui.main.MainViewModel.ButtonMode
 import org.fcitx.fcitx5.android.utils.item
-import splitties.resources.styledColor
+import org.fcitx.fcitx5.android.utils.styledColorOrDefault
 
 class EditDeleteMenuProvider<T>(
     private val buttonMode: LiveData<ButtonMode>,
@@ -25,7 +25,14 @@ class EditDeleteMenuProvider<T>(
     lifecycleOwner: LifecycleOwner,
 ) : MenuProvider where T : MenuHost, T : Context {
 
-    private val tint = menuHost.styledColor(android.R.attr.colorControlNormal)
+    // styledColor(android.R.attr.colorControlNormal) throws
+    // IllegalArgumentException("Expected a color theme attribute but got type 0x3")
+    // on some OEM themes (e.g. OnePlus/ColorOS), where the attribute resolves to
+    // a non-color type. Use 0 (no tint) as fallback; Menu.setup() skips tinting
+    // when tint is 0.
+    private val tint by lazy(LazyThreadSafetyMode.NONE) {
+        menuHost.styledColorOrDefault(android.R.attr.colorControlNormal, 0)
+    }
 
     init {
         buttonMode.observe(lifecycleOwner) { menuHost.invalidateMenu() }

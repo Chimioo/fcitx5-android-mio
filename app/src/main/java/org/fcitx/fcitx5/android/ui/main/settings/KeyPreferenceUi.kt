@@ -14,9 +14,9 @@ import org.fcitx.fcitx5.android.core.KeyState
 import org.fcitx.fcitx5.android.core.KeyStates
 import org.fcitx.fcitx5.android.core.KeySym
 import org.fcitx.fcitx5.android.input.FcitxInputMethodService
+import org.fcitx.fcitx5.android.utils.styledColorSLOrDefault
 import splitties.dimensions.dp
 import splitties.resources.drawable
-import splitties.resources.styledColorSL
 import splitties.resources.styledDrawable
 import splitties.views.dsl.constraintlayout.above
 import splitties.views.dsl.constraintlayout.after
@@ -67,8 +67,9 @@ class KeyPreferenceUi(override val ctx: Context) : Ui {
             }
 
         fun applyStyles() = root.apply {
-            backgroundTintList = ctx.styledColorSL(
-                if (checked) android.R.attr.colorPrimary else android.R.attr.colorBackgroundFloating
+            backgroundTintList = ctx.styledColorSLOrDefault(
+                if (checked) android.R.attr.colorPrimary else android.R.attr.colorBackgroundFloating,
+                null
             )
         }
     }
