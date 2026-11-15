@@ -48,8 +48,10 @@ class BuildMetadataPlugin : Plugin<Project> {
                             "build-metadata${suffix}.json"
                         }
                         outputFile.set(packageTask.outputDirectory.file(fileName))
-                    }.also {
-                        target.tasks.getByName("assemble${variantName}").dependsOn(it)
+                    }.also { metadataTask ->
+                        target.tasks.getByName("assemble${variantName}").dependsOn(metadataTask)
+                        target.tasks.matching { it.name == "redirectIdeApkOutputs${variantName}" }
+                            .configureEach { mustRunAfter(metadataTask) }
                     }
                 }
             }

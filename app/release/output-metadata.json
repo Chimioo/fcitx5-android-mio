@@ -16,9 +16,9 @@
         }
       ],
       "attributes": [],
-      "versionCode": 101,
-      "versionName": "0.1.2-76-g0d635b8a",
-      "outputFile": "org.fcitx.fcitx5.android-0.1.2-76-g0d635b8a-armeabi-v7a-release.apk"
+      "versionCode": 111,
+      "versionName": "0.1.3-30-gdc4f190b",
+      "outputFile": "org.fcitx.fcitx5.android-0.1.3-30-gdc4f190b-armeabi-v7a-release.apk"
     },
     {
       "type": "ONE_OF_MANY",
@@ -29,9 +29,9 @@
         }
       ],
       "attributes": [],
-      "versionCode": 103,
-      "versionName": "0.1.2-76-g0d635b8a",
-      "outputFile": "org.fcitx.fcitx5.android-0.1.2-76-g0d635b8a-x86-release.apk"
+      "versionCode": 113,
+      "versionName": "0.1.3-30-gdc4f190b",
+      "outputFile": "org.fcitx.fcitx5.android-0.1.3-30-gdc4f190b-x86-release.apk"
     },
     {
       "type": "ONE_OF_MANY",
@@ -42,9 +42,9 @@
         }
       ],
       "attributes": [],
-      "versionCode": 104,
-      "versionName": "0.1.2-76-g0d635b8a",
-      "outputFile": "org.fcitx.fcitx5.android-0.1.2-76-g0d635b8a-x86_64-release.apk"
+      "versionCode": 114,
+      "versionName": "0.1.3-30-gdc4f190b",
+      "outputFile": "org.fcitx.fcitx5.android-0.1.3-30-gdc4f190b-x86_64-release.apk"
     },
     {
       "type": "ONE_OF_MANY",
@@ -55,9 +55,9 @@
         }
       ],
       "attributes": [],
-      "versionCode": 102,
-      "versionName": "0.1.2-76-g0d635b8a",
-      "outputFile": "org.fcitx.fcitx5.android-0.1.2-76-g0d635b8a-arm64-v8a-release.apk"
+      "versionCode": 112,
+      "versionName": "0.1.3-30-gdc4f190b",
+      "outputFile": "org.fcitx.fcitx5.android-0.1.3-30-gdc4f190b-arm64-v8a-release.apk"
     }
   ],
   "elementType": "File",

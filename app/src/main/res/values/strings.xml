@@ -240,6 +240,8 @@
     <string name="space_behavior_voice_press_to_talk">Voice input (press and hold)</string>
     <string name="show_lang_switch_key">Show language switch key</string>
     <string name="horizontal_candidate_style">Horizontal candidate style</string>
+    <string name="horizontal_candidate_swipe_paging">Swipe horizontally to switch candidate pages</string>
+    <string name="horizontal_candidate_swipe_paging_summary">Swipe left or right on the candidate bar to turn pages</string>
     <string name="horizontal_candidate_never_fill">Never fill width</string>
     <string name="horizontal_candidate_auto_fill">Fill width on demand</string>
     <string name="horizontal_candidate_always_fill">Always fill width</string>
